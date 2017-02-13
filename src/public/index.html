@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>RFID Client</title>
+    <link rel="icon" type="image/x-icon" href="/img/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/rxjs/4.1.0/rx.lite.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/rxjs-dom/7.0.3/rx.dom.js"></script>
+    <script src="rfid-client.js"></script>
+    <base href="/">
+</head>
+
+<body>
+<input id="inputMessage" type="text" value='{"cmd": "tagCount"}'/>
+<span id="toolbar">
+<input id="btnSend" type="button" value="Send"/>
+<input id="btnConnect" type="button" value="Connect"/>
+<input id="btnDisconnect" type="button" value="Disconnect"/>
+<input id="btnClear" type="button" value="Clear"/>
+</span>
+<ol id="messages" reversed>
+</ol>
+</body>
+</html>
