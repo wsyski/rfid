@@ -1,7 +1,4 @@
-var com = com || {};
-com.axiell = com.axiell || {};
-
-com.axiell.rfid = function () {
+var AxRFID  = function () {
 
     function Client(config) {
         this._config = config || {host: "localhost", port: 7000};
@@ -117,3 +114,4 @@ com.axiell.rfid = function () {
     }
 }();
 
+module.exports=AxRFID;
