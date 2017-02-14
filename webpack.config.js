@@ -32,7 +32,7 @@ module.exports = function makeWebpackConfig() {
    */
   config.entry = isTest ? void 0 : {
     app: './src/app/app.module.js',
-    vendor: ['angular','angular-animate','angular-route','angular-resource','rx-lite','rx-dom','rx-store']
+    vendor: ['angular','angular-animate','angular-route','angular-resource','rx-lite','rx-dom','rx-store','object-assign']
   };
 
   /**

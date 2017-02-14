@@ -1,4 +1,5 @@
 var Rx=require('rx-dom');
+var assign = require('object-assign');
 var createRxStore = require('rx-store').createRxStore;
 
 var AxRfid  = function () {
@@ -34,33 +35,63 @@ var AxRfid  = function () {
     function noop() {
     }
 
+    function Tag(id,isComplete) {
+        this.id=id;
+        this.isComplete=isComplete;
+    }
+
     function TagStore() {
+        function indexOf(tags,id) {
+            tags.forEach(function(tag,index) {
+                if (tag.id==id) {
+                    return index;
+                }
+            });
+            return -1;
+        }
         function tagReducer(state, action) {
+            var payload=action.payload;
             switch (action.type) {
                 case 'ADD':
-                    var addState = state;
-                    addState.count += action.payload;
-                    return addState;
-                case 'ACTION_TWO':
-                    return actionTwo(state);
+                    var indexAdd=indexOf(state.tags,payload.id);
+                    if (indexAdd==-1) {
+                      return assign({},state,{tags: state.tags.concat(new Tag(payload.id,true))});
+                    }
+                    return state;
+                case 'REMOVE':
+                    var indexRemove=indexOf(state.tags,payload.id);
+                    if (indexRemove!=-1) {
+                        return assign({},state,{tags: state.tags.filter(function(tag,index) {return indexRemove!=index})});
+                    }
+                    return state;
                 default:
                     return state;
             }
         }
 
-        function add(data) {
+        function add(payload) {
             return {
                 type: 'ADD',
-                payload: data
+                payload: payload
             };
         }
 
+        function remove(payload) {
+            return {
+                type: 'REMOVE',
+                payload: payload
+            };
+        }
 
-        var _store = createRxStore(tagReducer, {count: 0, somethingElse: 'data'});
+        var _store = createRxStore(tagReducer, {isReady: true, isEnabled: false, tags: []});
 
         return {
             add: function (data) {
                 var action=add(data);
+                _store.dispatch(action);
+            },
+            remove: function (data) {
+                var action=remove(data);
                 _store.dispatch(action);
             },
             subscribe: function(callback) {
@@ -99,8 +130,6 @@ var AxRfid  = function () {
 
             this._ws = Rx.DOM.fromWebSocket("ws://" + this._config.host + ":" + this._config.port, null, openObserver, closingObserver);
             this._tagStore=new TagStore();
-            this._tagStore.add(4);
-            this._tagStore.add(5);
             this._tagStore.subscribe(function(data) {
                 console.log(data);
             });
@@ -111,6 +140,7 @@ var AxRfid  = function () {
                     var cmd=message.cmd;
                     if (cmd === "tag") {
                         this._tagReport.onNext(message);
+                        this._tagStore.add(message);
                     }
                     else {
                        if (this._queue.length>0) {
