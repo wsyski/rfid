@@ -27,8 +27,8 @@
     "angular-resource": "^1.5.11",
     "angular-route": "^1.5.11",
     "bootstrap": "^3.3.7",
-    "rx-lite": "^4.0.8",
-    "rx-dom": "^7.0.3"
+    "rx-dom": "^7.0.3",
+    "rx-store": "^1.0.0"
   },
   "devDependencies": {
     "debug": "~2.1.1",

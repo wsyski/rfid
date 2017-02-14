@@ -1,5 +1,6 @@
-require('rx-lite');
-require('rx-dom');
+var Rx=require('rx-dom');
+var createRxStore = require('rx-store').createRxStore;
+
 var AxRfid  = function () {
 
     function Client(config) {
@@ -33,6 +34,41 @@ var AxRfid  = function () {
     function noop() {
     }
 
+    function TagStore() {
+        function tagReducer(state, action) {
+            switch (action.type) {
+                case 'ADD':
+                    var addState = state;
+                    addState.count += action.payload;
+                    return addState;
+                case 'ACTION_TWO':
+                    return actionTwo(state);
+                default:
+                    return state;
+            }
+        }
+
+        function add(data) {
+            return {
+                type: 'ADD',
+                payload: data
+            };
+        }
+
+
+        var _store = createRxStore(tagReducer, {count: 0, somethingElse: 'data'});
+
+        return {
+            add: function (data) {
+                var action=add(data);
+                _store.dispatch(action);
+            },
+            subscribe: function(callback) {
+                return _store.subscribe(callback);
+            }
+        }
+    }
+
     Client.prototype.sendMessage=function(message) {
         if (this._ws) {
             var msg = messageAsString(message);
@@ -62,6 +98,12 @@ var AxRfid  = function () {
             }.bind(this));
 
             this._ws = Rx.DOM.fromWebSocket("ws://" + this._config.host + ":" + this._config.port, null, openObserver, closingObserver);
+            this._tagStore=new TagStore();
+            this._tagStore.add(4);
+            this._tagStore.add(5);
+            this._tagStore.subscribe(function(data) {
+                console.log(data);
+            });
             this._ws.subscribe(
                 function (e) {
                     var message = messageAsObject(e.data);
@@ -113,7 +155,8 @@ var AxRfid  = function () {
 
     return {
         Client: Client
-    }
+    };
 }();
+
 
 module.exports=AxRfid;

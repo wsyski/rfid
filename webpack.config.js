@@ -14,6 +14,7 @@ var CopyWebpackPlugin = require('copy-webpack-plugin');
 var ENV = process.env.npm_lifecycle_event;
 var isTest = ENV === 'test' || ENV === 'test-watch';
 var isProd = ENV === 'build';
+console.log('ENV: '+ENV);
 
 module.exports = function makeWebpackConfig() {
   /**
@@ -31,7 +32,7 @@ module.exports = function makeWebpackConfig() {
    */
   config.entry = isTest ? void 0 : {
     app: './src/app/app.module.js',
-    vendor: ['angular','angular-animate','angular-route','angular-resource','rx-lite','rx-dom']
+    vendor: ['angular','angular-animate','angular-route','angular-resource','rx-lite','rx-dom','rx-store']
   };
 
   /**
@@ -69,7 +70,8 @@ module.exports = function makeWebpackConfig() {
     config.devtool = 'source-map';
   }
   else {
-    config.devtool = 'eval-source-map';
+    config.devtool = 'inline-source-map';
+    //config.devtool = 'eval-source-map';
   }
 
   /**
@@ -200,6 +202,7 @@ module.exports = function makeWebpackConfig() {
       // Reference: http://webpack.github.io/docs/list-of-plugins.html#uglifyjsplugin
       // Minify all javascript, switch loaders to minimizing mode
       new webpack.optimize.UglifyJsPlugin({
+        /*
           debug: true,
           minimize: false,
           mangle: false,
@@ -210,6 +213,7 @@ module.exports = function makeWebpackConfig() {
           compressor: {
               warnings: true
           }
+          */
       }),
 
       // Copy assets from the public folder
