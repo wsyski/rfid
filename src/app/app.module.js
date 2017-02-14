@@ -2,7 +2,7 @@
 
 require('../style/app.css');
 
-var AxRFID=require ('./AxRFID');
+var AxRfid=require('./AxRfid');
 
 function $(id) {
     return document.getElementById(id);
@@ -43,7 +43,7 @@ window.addEventListener("load", function (event) {
     // var host = window.document.location.host.replace(/:.*/, '');
     var host = 'lulpreserv3';
     var port = 7000;
-    var rfidClient = new AxRFID.Client({host: host, port: port});
+    var rfidClient = new AxRfid.Client({host: host, port: port});
     var btnSend = $("btnSend");
     var btnConnect = $("btnConnect");
     var btnDisconnect = $("btnDisconnect");

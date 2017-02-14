@@ -1,4 +1,6 @@
-var AxRFID  = function () {
+require('rx-lite');
+require('rx-dom');
+var AxRfid  = function () {
 
     function Client(config) {
         this._config = config || {host: "localhost", port: 7000};
@@ -114,4 +116,4 @@ var AxRFID  = function () {
     }
 }();
 
-module.exports=AxRFID;
+module.exports=AxRfid;
