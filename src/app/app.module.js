@@ -7,35 +7,27 @@ function $(id) {
     return document.getElementById(id);
 }
 
-function displayMessage(message, header) {
-    var messagesNode = $("messages");
+function getObjectHtml(object) {
+    var tableNode = document.createElement("TABLE");
+    var trNode = document.createElement("TR");
+    tableNode.appendChild(trNode);
+    var tdNode = document.createElement("TD");
+    trNode.appendChild(tdNode);
+    var propertyTextNode = document.createTextNode(JSON.stringify(object));
+    tdNode.appendChild(propertyTextNode);
+    return tableNode;
+}
+
+function displayDebug(message) {
+    var debugNode = $("debug");
     var liNode = document.createElement("LI");
-    if (messagesNode.firstElementChild) {
-        messagesNode.insertBefore(liNode, messagesNode.firstElementChild);
+    if (debugNode.firstElementChild) {
+        debugNode.insertBefore(liNode, debugNode.firstElementChild);
     }
     else {
-        messagesNode.appendChild(liNode);
+        debugNode.appendChild(liNode);
     }
-    var tableNode = document.createElement("TABLE");
-    liNode.appendChild(tableNode);
-    var thNode = document.createElement("TH");
-    tableNode.appendChild(thNode);
-    var headerTextNode = document.createTextNode(header);
-    thNode.appendChild(headerTextNode);
-    for (var key in message) {
-        if (message.hasOwnProperty(key)) {
-            var trNode = document.createElement("TR");
-            tableNode.appendChild(trNode);
-            var tdNode = document.createElement("TD");
-            trNode.appendChild(tdNode);
-            var keyTextNode = document.createTextNode(key);
-            tdNode.appendChild(keyTextNode);
-            tdNode = document.createElement("TD");
-            trNode.appendChild(tdNode);
-            var valueTextNode = document.createTextNode(message[key]);
-            tdNode.appendChild(valueTextNode);
-        }
-    }
+    liNode.appendChild(getObjectHtml(message));
 }
 
 window.addEventListener("load", function (event) {
@@ -56,13 +48,11 @@ window.addEventListener("load", function (event) {
     }
 
     btnSend.addEventListener("click", function (event) {
-        var message = inputMessage.value;
-        console.log('request: %s', message);
-        displayMessage(JSON.parse(message), 'Request');
-        var result = rfidClient.sendMessage(message);
+        var messageAsString = inputMessage.value;
+        console.log('request: %s', messageAsString);
+        var result = rfidClient.sendMessage(JSON.parse(messageAsString));
         result.subscribe(
             function (message) {
-                displayMessage(message, 'Response');
             },
             function (e) {
                 // errors and "unclean" closes land here
@@ -76,9 +66,9 @@ window.addEventListener("load", function (event) {
     });
     btnConnect.addEventListener("click", function (event) {
         rfidClient.connect();
-        rfidClient.getTagReport().subscribe(
+        rfidClient.getDebugSubject().subscribe(
             function (message) {
-                displayMessage(message, 'Response');
+                displayDebug(message);
             },
             function (e) {
                 // errors and "unclean" closes land here

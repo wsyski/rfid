@@ -6,33 +6,8 @@ var AxRfid  = function () {
 
     function Client(config) {
         this._config = config || {host: "localhost", port: 7000};
-        this._tagReport = new Rx.Subject();
+        this._debugSubject = new Rx.Subject();
         this._queue = [];
-    }
-
-    function messageAsString(message) {
-        var messageAsString;
-        if (typeof message !== "string") {
-            messageAsString = JSON.stringify(message);
-        }
-        else {
-            messageAsString = message;
-        }
-        return messageAsString;
-    }
-
-    function messageAsObject(message) {
-        var messageAsObject;
-        if (typeof message === "string") {
-            messageAsObject = JSON.parse(message);
-        }
-        else {
-            messageAsObject = message;
-        }
-        return messageAsObject;
-    }
-
-    function noop() {
     }
 
     function Tag(id,isComplete) {
@@ -54,14 +29,14 @@ var AxRfid  = function () {
             switch (action.type) {
                 case 'ADD':
                     var indexAdd=indexOf(state.tags,payload.id);
-                    if (indexAdd==-1) {
+                    if (indexAdd===-1) {
                       return assign({},state,{tags: state.tags.concat(new Tag(payload.id,true))});
                     }
                     return state;
                 case 'REMOVE':
                     var indexRemove=indexOf(state.tags,payload.id);
-                    if (indexRemove!=-1) {
-                        return assign({},state,{tags: state.tags.filter(function(tag,index) {return indexRemove!=index})});
+                    if (indexRemove!==-1) {
+                        return assign({},state,{tags: state.tags.filter(function(tag,index) {return indexRemove!==index})});
                     }
                     return state;
                 default:
@@ -102,9 +77,10 @@ var AxRfid  = function () {
 
     Client.prototype.sendMessage=function(message) {
         if (this._ws) {
-            var msg = messageAsString(message);
-            console.log("sending ", msg);
-            this._ws.onNext(msg);
+            var messageAsString = JSON.stringify(message);
+            this._debugSubject.onNext({"action": "Request","message": message});
+            console.log("sending ", messageAsString);
+            this._ws.onNext(messageAsString);
             var result = new Rx.ReplaySubject(1);
             this._queue.push(result);
             return result;
@@ -135,11 +111,12 @@ var AxRfid  = function () {
             });
             this._ws.subscribe(
                 function (e) {
-                    var message = messageAsObject(e.data);
-                    console.log('response: %s', e.data);
+                    var messageAsString=e.data;
+                    var message = JSON.parse(messageAsString);
+                    console.log('response: %s', messageAsString);
+                    this._debugSubject.onNext({"action": "Response","message": message});
                     var cmd=message.cmd;
                     if (cmd === "tag") {
-                        this._tagReport.onNext(message);
                         this._tagStore.add(message);
                     }
                     else {
@@ -149,7 +126,7 @@ var AxRfid  = function () {
                           subject.onCompleted();
                        }
                        else {
-                           console.error("Unexpected message: "+message);
+                           console.error("Unexpected message: "+messageAsString);
                        }
                     }
                 }.bind(this),
@@ -169,11 +146,12 @@ var AxRfid  = function () {
         return !!this._ws;
     };
 
-    Client.prototype.getTagReport = function () {
-        return this._tagReport;
+    Client.prototype.getDebugSubject = function () {
+        return this._debugSubject;
     };
 
     Client.prototype.disconnect = function () {
+        function noop() {}
         if (this._ws) {
             var disposable=this._ws.subscribe(noop);
             disposable.dispose();
