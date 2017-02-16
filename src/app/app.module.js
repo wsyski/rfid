@@ -1,24 +1,26 @@
 'use strict';
 
 require('../style/app.css');
-var AxRfid=require('./ax-rfid');
+var AxRfid = require('./ax-rfid');
 
 function $(id) {
     return document.getElementById(id);
 }
-
-function getObjectHtml(object) {
-    var tableNode = document.createElement("TABLE");
-    var trNode = document.createElement("TR");
-    tableNode.appendChild(trNode);
-    var tdNode = document.createElement("TD");
-    trNode.appendChild(tdNode);
-    var propertyTextNode = document.createTextNode(JSON.stringify(object));
-    tdNode.appendChild(propertyTextNode);
-    return tableNode;
+function removeChildNodes(id) {
+    var node = $(id);
+    while (node.firstChild) {
+        node.removeChild(node.firstChild);
+    }
 }
 
-function displayDebug(message) {
+function getObjectHtml(object) {
+    var divNode = document.createElement("DIV");
+    var textNode = document.createTextNode(JSON.stringify(object));
+    divNode.appendChild(textNode);
+    return divNode;
+}
+
+function showDebugMessage(message) {
     var debugNode = $("debug");
     var liNode = document.createElement("LI");
     if (debugNode.firstElementChild) {
@@ -30,11 +32,17 @@ function displayDebug(message) {
     liNode.appendChild(getObjectHtml(message));
 }
 
+function showTags(data) {
+    removeChildNodes("tags");
+    var divNode=$("tags");
+    divNode.appendChild(getObjectHtml(data));
+}
+
 window.addEventListener("load", function (event) {
     //var host = window.document.location.host.replace(/:.*/, '');
     var host = 'lulpreserv3';
     var port = 7000;
-    var rfidClient = new AxRfid.Client({host: host, port: port});
+    var rfidClient = new AxRfid.Client({host: host, port: port, isDebug: true});
     var btnSend = $("btnSend");
     var btnConnect = $("btnConnect");
     var btnDisconnect = $("btnDisconnect");
@@ -49,7 +57,6 @@ window.addEventListener("load", function (event) {
 
     btnSend.addEventListener("click", function (event) {
         var messageAsString = inputMessage.value;
-        console.log('request: %s', messageAsString);
         var result = rfidClient.sendMessage(JSON.parse(messageAsString));
         result.subscribe(
             function (message) {
@@ -68,7 +75,7 @@ window.addEventListener("load", function (event) {
         rfidClient.connect();
         rfidClient.getDebugSubject().subscribe(
             function (message) {
-                displayDebug(message);
+                showDebugMessage(message);
             },
             function (e) {
                 // errors and "unclean" closes land here
@@ -79,6 +86,10 @@ window.addEventListener("load", function (event) {
                 console.info('socket closed');
             }
         );
+        rfidClient.getTagStore().subscribe(function (data) {
+            console.log(data);
+            showTags(data);
+        });
         updateToolbar();
     });
     btnDisconnect.addEventListener("click", function (event) {
@@ -86,10 +97,7 @@ window.addEventListener("load", function (event) {
         updateToolbar();
     });
     btnClear.addEventListener("click", function (event) {
-        var messagesNode = $("messages");
-        while (messagesNode.firstChild) {
-            messagesNode.removeChild(messagesNode.firstChild);
-        }
+        removeChildNodes("messages");
     });
     updateToolbar();
 });

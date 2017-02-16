@@ -1,87 +1,27 @@
-var Rx=require('rx-dom');
 var assign = require('object-assign');
-var createRxStore = require('rx-store').createRxStore;
+var Rx = require('rx-dom');
+var AxRfidStore = require('./ax-rfid-store');
 
-var AxRfid  = function () {
+(function (exports) {
+    'use strict';
 
     function Client(config) {
-        this._config = config || {host: "localhost", port: 7000};
+        this._config = assign({}, {host: "localhost", port: 7000, isDebug: false}, config);
         this._debugSubject = new Rx.Subject();
         this._queue = [];
     }
 
-    function Tag(id,isComplete) {
-        this.id=id;
-        this.isComplete=isComplete;
-    }
-
-    function tagReducer(state, action) {
-        function indexOf(tags,id) {
-            tags.forEach(function(tag,index) {
-                if (tag.id==id) {
-                    return index;
-                }
-            });
-            return -1;
+    Client.prototype.debugMessage = function(action, message) {
+        if (this._config.isDebug) {
+            this._debugSubject.onNext({"action": action, "message": message});
+            console.log("action: %s message: %s", action, message);
         }
+    };
 
-        var payload=action.payload;
-        switch (action.type) {
-            case 'ADD':
-                var indexAdd=indexOf(state.tags,payload.id);
-                if (indexAdd===-1) {
-                    return assign({},state,{tags: state.tags.concat(new Tag(payload.id,true))});
-                }
-                return state;
-            case 'REMOVE':
-                var indexRemove=indexOf(state.tags,payload.id);
-                if (indexRemove!==-1) {
-                    return assign({},state,{tags: state.tags.filter(function(tag,index) {return indexRemove!==index})});
-                }
-                return state;
-            default:
-                return state;
-        }
-    }
-
-    function TagStore() {
-
-        function add(payload) {
-            return {
-                type: 'ADD',
-                payload: payload
-            };
-        }
-
-        function remove(payload) {
-            return {
-                type: 'REMOVE',
-                payload: payload
-            };
-        }
-
-        var _store = createRxStore(tagReducer, {isReady: true, isEnabled: false, tags: []});
-
-        return {
-            add: function (data) {
-                var action=add(data);
-                _store.dispatch(action);
-            },
-            remove: function (data) {
-                var action=remove(data);
-                _store.dispatch(action);
-            },
-            subscribe: function(callback) {
-                return _store.subscribe(callback);
-            }
-        }
-    }
-
-    Client.prototype.sendMessage=function(message) {
+    Client.prototype.sendMessage = function (message) {
         if (this._ws) {
             var messageAsString = JSON.stringify(message);
-            this._debugSubject.onNext({"action": "Request","message": message});
-            console.log("sending ", messageAsString);
+            this.debugMessage("request",message);
             this._ws.onNext(messageAsString);
             var result = new Rx.ReplaySubject(1);
             this._queue.push(result);
@@ -107,29 +47,25 @@ var AxRfid  = function () {
             }.bind(this));
 
             this._ws = Rx.DOM.fromWebSocket("ws://" + this._config.host + ":" + this._config.port, null, openObserver, closingObserver);
-            this._tagStore=new TagStore();
-            this._tagStore.subscribe(function(data) {
-                console.log(data);
-            });
+            this._tagStore = new AxRfidStore.TagStore();
             this._ws.subscribe(
                 function (e) {
-                    var messageAsString=e.data;
+                    var messageAsString = e.data;
                     var message = JSON.parse(messageAsString);
-                    console.log('response: %s', messageAsString);
-                    this._debugSubject.onNext({"action": "Response","message": message});
-                    var cmd=message.cmd;
+                    this.debugMessage("response", message);
+                    var cmd = message.cmd;
                     if (cmd === "tag") {
                         this._tagStore.add(message);
                     }
                     else {
-                       if (this._queue.length>0) {
-                          var subject=this._queue.shift();
-                          subject.onNext(message);
-                          subject.onCompleted();
-                       }
-                       else {
-                           console.error("Unexpected message: "+messageAsString);
-                       }
+                        if (this._queue.length > 0) {
+                            var subject = this._queue.shift();
+                            subject.onNext(message);
+                            subject.onCompleted();
+                        }
+                        else {
+                            console.error("Unexpected message: " + messageAsString);
+                        }
                     }
                 }.bind(this),
                 function (e) {
@@ -152,21 +88,25 @@ var AxRfid  = function () {
         return this._debugSubject;
     };
 
+    Client.prototype.getTagStore = function () {
+        return this._tagStore;
+    };
+
     Client.prototype.disconnect = function () {
-        function noop() {}
+        function noop() {
+        }
+
         if (this._ws) {
-            var disposable=this._ws.subscribe(noop);
+            var disposable = this._ws.subscribe(noop);
             disposable.dispose();
         }
         else {
             console.error("Not connected");
         }
     };
+    exports.Client = Client;
 
-    return {
-        Client: Client
-    };
-}();
+}((window.AxRfid = window.AxRfid || {})));
 
 
-module.exports=AxRfid;
+module.exports = AxRfid;
