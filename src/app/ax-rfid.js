@@ -37,24 +37,44 @@ var AxRfidStore = require('./ax-rfid-store');
 
                     ws = Rx.DOM.fromWebSocket("ws://" + config.host + ":" + config.port, null, openObserver, closingObserver);
                     tagStore = new AxRfidStore.TagStore();
-                    subscription=ws.subscribe(
+                    subscription = ws.subscribe(
                         function (e) {
                             var messageAsString = e.data;
                             var message = JSON.parse(messageAsString);
                             debugMessage("response", message);
                             var cmd = message.cmd;
-                            if (cmd === "tag") {
-                                tagStore.add(message);
-                            }
-                            else {
-                                if (queue.length > 0) {
-                                    var subject = queue.shift();
-                                    subject.onNext(message);
-                                    subject.onCompleted();
-                                }
-                                else {
-                                    console.error("Unexpected message: " + messageAsString);
-                                }
+                            switch (cmd) {
+                                case "tag":
+                                    var reason = message.reason;
+                                    var id = message.id;
+                                    var reader = message.reader;
+                                    switch (reason) {
+                                        case 'Reader empty':
+                                            tagStore.removeAllTags();
+                                            break;
+                                        case 'Removed':
+                                            tagStore.removeTag(id);
+                                            break;
+                                        case 'Partial':
+                                        case 'Firsttime new partial':
+                                            tagStore.addOrReplaceTag(id, reader, false);
+                                            break;
+                                        default:
+                                            tagStore.addOrReplaceTag(id, reader, true);
+                                    }
+                                    break;
+                                case "disabled":
+                                    tagStore.setEnabled(false);
+                                    break;
+                                default:
+                                    if (queue.length > 0) {
+                                        var subject = queue.shift();
+                                        subject.onNext(message);
+                                        subject.onCompleted();
+                                    }
+                                    else {
+                                        console.error("Unexpected message: " + messageAsString);
+                                    }
                             }
                         }.bind(this),
                         function (e) {

@@ -85,8 +85,9 @@ window.addEventListener("load", function (event) {
                 console.error('error: %s', e);
             },
             function () {
-                // the socket has been closed
-                console.info('socket closed');
+                tagStoreSubscription.unsubscribe();
+                debugSubscription.dispose();
+                console.info('Disconnected from debug subject');
             }
         );
         tagStoreSubscription=rfidClient.getTagStore().subscribe(function (data) {
@@ -96,8 +97,6 @@ window.addEventListener("load", function (event) {
         updateToolbar();
     });
     btnDisconnect.addEventListener("click", function (event) {
-        tagStoreSubscription.unsubscribe();
-        debugSubscription.dispose();
         rfidClient.disconnect();
         updateToolbar();
     });

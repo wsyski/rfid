@@ -5,8 +5,9 @@ var createRxStore = require('rx-store').createRxStore;
     'use strict';
     var initialState = {isReady: true, isEnabled: false, tags: []};
 
-    function Tag(id, isComplete) {
+    function Tag(id, reader, isComplete) {
         this.id = id;
+        this.reader = reader;
         this.isComplete = isComplete;
     }
 
@@ -22,18 +23,25 @@ var createRxStore = require('rx-store').createRxStore;
 
         function removeTag(tags, id) {
             return tags.filter(function (tag) {
-                return tag.id!==id;
+                return tag.id !== id;
             })
         }
 
         var payload = action.payload;
+
         switch (action.type) {
-            case 'ADD':
-                var tags=removeTag(state.tags,payload.id);
-                return assign({}, state, {tags: tags.concat(new Tag(payload.id, true))});
-            case 'REMOVE':
-                var tags=removeTag(state.tags,payload.id);
+            case 'ADD_OR_REPLACE_TAG':
+                var tags = removeTag(state.tags, payload.id);
+                return assign({}, state, {tags: tags.concat(new Tag(payload.id, payload.reader, payload.isComplete))});
+            case 'REMOVE_TAG':
+                var tags = removeTag(state.tags, payload.id);
                 return assign({}, state, {tags: tags});
+            case 'REMOVE_ALL_TAGS':
+                return assign({}, state, {tags: []});
+            case 'SET_ENABLED':
+                return assign({}, state, {isEnabled: payload.isEnabled});
+            case 'SET_ACTIVE':
+                return assign({}, state, {isActive: payload.isActive});
             default:
                 return state;
         }
@@ -41,33 +49,65 @@ var createRxStore = require('rx-store').createRxStore;
 
     function TagStore() {
 
-        function add(payload) {
+        function addOrReplaceTag(id, reader, isComplete) {
             return {
-                type: 'ADD',
-                payload: payload
+                type: 'ADD_OR_REPLACE_TAG',
+                payload: {id: id, reader: reader, isComplete: isComplete}
             };
         }
 
-        function remove(payload) {
+        function removeTag(id) {
             return {
-                type: 'REMOVE',
-                payload: payload
+                type: 'REMOVE_TAG',
+                payload: {id: id}
             };
         }
 
-        var _store = createRxStore(tagReducer, initialState);
+        function removeAllTags() {
+            return {
+                type: 'REMOVE_ALL_TAGS'
+            };
+        }
+
+        function setEnabled(isEnabled) {
+            return {
+                type: 'SET_ENABLED',
+                payload: {isEnabled: isEnabled}
+            };
+        }
+
+        function setActive(isActive) {
+            return {
+                type: 'SET_ACTIVE',
+                payload: {isActive: isActive}
+            };
+        }
+
+        var store = createRxStore(tagReducer, initialState);
 
         return {
-            add: function (data) {
-                var action = add(data);
-                _store.dispatch(action);
+            addOrReplaceTag: function (id, reader, isComplete) {
+                var action = addOrReplaceTag(id, reader, isComplete);
+                store.dispatch(action);
             },
-            remove: function (data) {
-                var action = remove(data);
-                _store.dispatch(action);
+            removeTag: function (id) {
+                var action = removeTag(id);
+                store.dispatch(action);
+            },
+            removeAllTags: function () {
+                var action = removeAllTags();
+                store.dispatch(action);
+            },
+            setEnabled: function (isEnabled) {
+                var action = setEnabled(isEnabled);
+                store.dispatch(action);
+            },
+            setActive: function (isActive) {
+                var action = setActive(isActive);
+                store.dispatch(action);
             },
             subscribe: function (callback) {
-                return _store.subscribe(callback);
+                return store.subscribe(callback);
             }
         }
     }
