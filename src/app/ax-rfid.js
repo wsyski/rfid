@@ -15,7 +15,7 @@ var AxRfid  = function () {
         this.isComplete=isComplete;
     }
 
-    function TagStore() {
+    function tagReducer(state, action) {
         function indexOf(tags,id) {
             tags.forEach(function(tag,index) {
                 if (tag.id==id) {
@@ -24,25 +24,27 @@ var AxRfid  = function () {
             });
             return -1;
         }
-        function tagReducer(state, action) {
-            var payload=action.payload;
-            switch (action.type) {
-                case 'ADD':
-                    var indexAdd=indexOf(state.tags,payload.id);
-                    if (indexAdd===-1) {
-                      return assign({},state,{tags: state.tags.concat(new Tag(payload.id,true))});
-                    }
-                    return state;
-                case 'REMOVE':
-                    var indexRemove=indexOf(state.tags,payload.id);
-                    if (indexRemove!==-1) {
-                        return assign({},state,{tags: state.tags.filter(function(tag,index) {return indexRemove!==index})});
-                    }
-                    return state;
-                default:
-                    return state;
-            }
+
+        var payload=action.payload;
+        switch (action.type) {
+            case 'ADD':
+                var indexAdd=indexOf(state.tags,payload.id);
+                if (indexAdd===-1) {
+                    return assign({},state,{tags: state.tags.concat(new Tag(payload.id,true))});
+                }
+                return state;
+            case 'REMOVE':
+                var indexRemove=indexOf(state.tags,payload.id);
+                if (indexRemove!==-1) {
+                    return assign({},state,{tags: state.tags.filter(function(tag,index) {return indexRemove!==index})});
+                }
+                return state;
+            default:
+                return state;
         }
+    }
+
+    function TagStore() {
 
         function add(payload) {
             return {
