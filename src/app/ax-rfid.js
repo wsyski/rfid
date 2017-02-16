@@ -127,13 +127,13 @@ var AxRfidStore = require('./ax-rfid-store');
                 var result=sendMessage({"cmd":"enable"});
                 var subscription=result.subscribe(
                     function (message) {
-                         tagStore.setEnabled(true);
+                        subscription.dispose();
+                        tagStore.setEnabled(true);
                     },
                     function (e) {
                         console.error('error: %s', e);
                     },
                     function () {
-                        subscription.dispose();
                     }
                 );
             },

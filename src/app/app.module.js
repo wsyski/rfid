@@ -42,7 +42,7 @@ window.addEventListener("load", function (event) {
     //var host = window.document.location.host.replace(/:.*/, '');
     var host = 'lulpreserv3';
     var port = 7000;
-    var rfidClient = new AxRfid.Client({host: host, port: port, isDebug: true});
+    var axRfidClient = new AxRfid.Client({host: host, port: port, isDebug: true});
     var btnCommand = $("btnCommand");
     var btnConnect = $("btnConnect");
     var btnDisconnect = $("btnDisconnect");
@@ -53,30 +53,29 @@ window.addEventListener("load", function (event) {
     var tagStoreSubscription;
 
     function updateToolbar() {
-        btnCommand.disabled = !rfidClient.isConnected();
-        btnConnect.disabled = rfidClient.isConnected();
-        btnDisconnect.disabled = !rfidClient.isConnected();
-        btnEnable.disabled = !rfidClient.isConnected();
+        btnCommand.disabled = !axRfidClient.isConnected();
+        btnConnect.disabled = axRfidClient.isConnected();
+        btnDisconnect.disabled = !axRfidClient.isConnected();
+        btnEnable.disabled = !axRfidClient.isConnected();
     }
 
     btnCommand.addEventListener("click", function (event) {
         var messageAsString = inputMessage.value;
-        var result = rfidClient.command(JSON.parse(messageAsString));
+        var result = axRfidClient.command(JSON.parse(messageAsString));
         var subscription=result.subscribe(
             function (message) {
-
+                subscription.dispose();
             },
             function (e) {
                 console.error('error: %s', e);
             },
             function () {
-                subscription.dispose();
             }
         );
     });
     btnConnect.addEventListener("click", function (event) {
-        rfidClient.connect();
-        debugSubscription=rfidClient.getDebugSubject().subscribe(
+        axRfidClient.connect();
+        debugSubscription=axRfidClient.getDebugSubject().subscribe(
             function (message) {
                 showDebugMessage(message);
             },
@@ -90,21 +89,21 @@ window.addEventListener("load", function (event) {
                 console.info('Disconnected from debug subject');
             }
         );
-        tagStoreSubscription=rfidClient.getTagStore().subscribe(function (data) {
+        tagStoreSubscription=axRfidClient.getTagStore().subscribe(function (data) {
             console.log(data);
             showTags(data);
         });
         updateToolbar();
     });
     btnDisconnect.addEventListener("click", function (event) {
-        rfidClient.disconnect();
+        axRfidClient.disconnect();
         updateToolbar();
     });
     btnClear.addEventListener("click", function (event) {
         removeChildNodes("debug");
     });
     btnEnable.addEventListener("click", function (event) {
-        rfidClient.enable();
+        axRfidClient.enable();
     });
     updateToolbar();
 });
