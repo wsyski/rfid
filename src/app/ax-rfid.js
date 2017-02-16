@@ -34,6 +34,26 @@ var AxRfidStore = require('./ax-rfid-store');
             }
         }
 
+        function sendMessageWithCallback(message, callback) {
+            if (ws) {
+                var result = sendMessage(message);
+                var subscription = result.subscribe(
+                    function (result) {
+                        subscription.dispose();
+                        callback(result);
+                    },
+                    function (e) {
+                        console.error('error: %s', e);
+                    },
+                    function () {
+                    }
+                );
+            }
+            else {
+                console.error("Not connected");
+            }
+        }
+
         return {
             connect: function () {
                 if (ws) {
@@ -123,21 +143,11 @@ var AxRfidStore = require('./ax-rfid-store');
                     console.error("Not connected");
                 }
             },
-            enable: function () {
-                var result=sendMessage({"cmd":"enable"});
-                var subscription=result.subscribe(
-                    function (message) {
-                        subscription.dispose();
-                        tagStore.setEnabled(true);
-                    },
-                    function (e) {
-                        console.error('error: %s', e);
-                    },
-                    function () {
-                    }
-                );
+            reload: function () {
+                sendMessageWithCallback({"cmd": "resend"}, function (result) {
+                });
             },
-            command: function (message) {
+            sendMessage: function (message) {
                 return sendMessage(message);
             }
         }

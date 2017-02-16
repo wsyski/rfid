@@ -40,14 +40,14 @@ function showTags(data) {
 
 window.addEventListener("load", function (event) {
     //var host = window.document.location.host.replace(/:.*/, '');
-    var host = 'lulpreserv3';
+    var host = 'lulpreserv3.axiell.local';
     var port = 7000;
     var axRfidClient = new AxRfid.Client({host: host, port: port, isDebug: true});
     var btnCommand = $("btnCommand");
     var btnConnect = $("btnConnect");
     var btnDisconnect = $("btnDisconnect");
     var btnClear = $("btnClear");
-    var btnEnable = $("btnEnable");
+    var btnReload = $("btnReload");
     var inputMessage = $("inputMessage");
     var debugSubscription;
     var tagStoreSubscription;
@@ -56,12 +56,12 @@ window.addEventListener("load", function (event) {
         btnCommand.disabled = !axRfidClient.isConnected();
         btnConnect.disabled = axRfidClient.isConnected();
         btnDisconnect.disabled = !axRfidClient.isConnected();
-        btnEnable.disabled = !axRfidClient.isConnected();
+        btnReload.disabled = !axRfidClient.isConnected();
     }
 
     btnCommand.addEventListener("click", function (event) {
         var messageAsString = inputMessage.value;
-        var result = axRfidClient.command(JSON.parse(messageAsString));
+        var result = axRfidClient.sendMessage(JSON.parse(messageAsString));
         var subscription=result.subscribe(
             function (message) {
                 subscription.dispose();
@@ -102,8 +102,8 @@ window.addEventListener("load", function (event) {
     btnClear.addEventListener("click", function (event) {
         removeChildNodes("debug");
     });
-    btnEnable.addEventListener("click", function (event) {
-        axRfidClient.enable();
+    btnReload.addEventListener("click", function (event) {
+        axRfidClient.reload();
     });
     updateToolbar();
 });
