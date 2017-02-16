@@ -48,6 +48,8 @@ window.addEventListener("load", function (event) {
     var btnDisconnect = $("btnDisconnect");
     var btnClear = $("btnClear");
     var inputMessage = $("inputMessage");
+    var debugSubscription;
+    var tagStoreSubscription;
 
     function updateToolbar() {
         btnSend.disabled = !rfidClient.isConnected();
@@ -58,8 +60,9 @@ window.addEventListener("load", function (event) {
     btnSend.addEventListener("click", function (event) {
         var messageAsString = inputMessage.value;
         var result = rfidClient.sendMessage(JSON.parse(messageAsString));
-        result.subscribe(
+        var subscription=result.subscribe(
             function (message) {
+                subscription.dispose();
             },
             function (e) {
                 // errors and "unclean" closes land here
@@ -73,7 +76,7 @@ window.addEventListener("load", function (event) {
     });
     btnConnect.addEventListener("click", function (event) {
         rfidClient.connect();
-        rfidClient.getDebugSubject().subscribe(
+        debugSubscription=rfidClient.getDebugSubject().subscribe(
             function (message) {
                 showDebugMessage(message);
             },
@@ -86,18 +89,20 @@ window.addEventListener("load", function (event) {
                 console.info('socket closed');
             }
         );
-        rfidClient.getTagStore().subscribe(function (data) {
+        tagStoreSubscription=rfidClient.getTagStore().subscribe(function (data) {
             console.log(data);
             showTags(data);
         });
         updateToolbar();
     });
     btnDisconnect.addEventListener("click", function (event) {
+        tagStoreSubscription.unsubscribe();
+        debugSubscription.dispose();
         rfidClient.disconnect();
         updateToolbar();
     });
     btnClear.addEventListener("click", function (event) {
-        removeChildNodes("messages");
+        removeChildNodes("debug");
     });
     updateToolbar();
 });
