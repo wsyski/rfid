@@ -43,34 +43,34 @@ window.addEventListener("load", function (event) {
     var host = 'lulpreserv3';
     var port = 7000;
     var rfidClient = new AxRfid.Client({host: host, port: port, isDebug: true});
-    var btnSend = $("btnSend");
+    var btnCommand = $("btnCommand");
     var btnConnect = $("btnConnect");
     var btnDisconnect = $("btnDisconnect");
     var btnClear = $("btnClear");
+    var btnEnable = $("btnEnable");
     var inputMessage = $("inputMessage");
     var debugSubscription;
     var tagStoreSubscription;
 
     function updateToolbar() {
-        btnSend.disabled = !rfidClient.isConnected();
+        btnCommand.disabled = !rfidClient.isConnected();
         btnConnect.disabled = rfidClient.isConnected();
         btnDisconnect.disabled = !rfidClient.isConnected();
+        btnEnable.disabled = !rfidClient.isConnected();
     }
 
-    btnSend.addEventListener("click", function (event) {
+    btnCommand.addEventListener("click", function (event) {
         var messageAsString = inputMessage.value;
-        var result = rfidClient.sendMessage(JSON.parse(messageAsString));
+        var result = rfidClient.command(JSON.parse(messageAsString));
         var subscription=result.subscribe(
             function (message) {
-                subscription.dispose();
+
             },
             function (e) {
-                // errors and "unclean" closes land here
                 console.error('error: %s', e);
             },
             function () {
-                // the socket has been closed
-                console.info('call completed');
+                subscription.dispose();
             }
         );
     });
@@ -102,6 +102,9 @@ window.addEventListener("load", function (event) {
     });
     btnClear.addEventListener("click", function (event) {
         removeChildNodes("debug");
+    });
+    btnEnable.addEventListener("click", function (event) {
+        rfidClient.enable();
     });
     updateToolbar();
 });
