@@ -7,7 +7,7 @@ var AxRfidStore = require('./ax-rfid-store');
 
     function Client(overrideConfig) {
         var config = assign({}, {host: "localhost", port: 7000, isDebug: false}, overrideConfig);
-        var debugSubject = new Rx.Subject();
+        var debugSubject;
         var queue = [];
         var ws;
         var tagStore;
@@ -39,8 +39,7 @@ var AxRfidStore = require('./ax-rfid-store');
                 var result = sendMessage(message);
                 var subscription = result.subscribe(
                     function (result) {
-                        subscription.dispose();
-                        callback(result);
+                         callback(result);
                     },
                     function (e) {
                         console.error('error: %s', e);
@@ -48,6 +47,7 @@ var AxRfidStore = require('./ax-rfid-store');
                     function () {
                     }
                 );
+                subscription.dispose();
             }
             else {
                 console.error("Not connected");
@@ -60,12 +60,18 @@ var AxRfidStore = require('./ax-rfid-store');
                     console.error("Already connected");
                 }
                 else {
+                    if (config.isDebug) {
+                        debugSubject = new Rx.Subject();
+                    }
+
                     var openObserver = Rx.Observer.create(function (e) {
                         console.log('Connected');
                     }.bind(this));
 
                     var closingObserver = Rx.Observer.create(function () {
                         console.log('Disconnecting');
+                        debugSubject.dispose();
+                        debugSubject=null;
                         ws = null;
                     }.bind(this));
 
@@ -146,6 +152,10 @@ var AxRfidStore = require('./ax-rfid-store');
             reload: function () {
                 sendMessageWithCallback({"cmd": "resend"}, function (result) {
                 });
+            },
+            setCheckoutState: function (id, isActivated) {
+                var security = isActivated ? "Activated" : "Deactivated";
+                return sendMessage({"cmd": "setCheckoutState", "id": id, "security": security})
             },
             sendMessage: function (message) {
                 return sendMessage(message);

@@ -31,11 +31,9 @@ var createRxStore = require('rx-store').createRxStore;
 
         switch (action.type) {
             case 'ADD_OR_REPLACE_TAG':
-                var tags = removeTag(state.tags, payload.id);
-                return assign({}, state, {tags: tags.concat(new Tag(payload.id, payload.reader, payload.isComplete))});
+                return assign({}, state, {tags: removeTag(state.tags, payload.id).concat(new Tag(payload.id, payload.reader, payload.isComplete))});
             case 'REMOVE_TAG':
-                var tags = removeTag(state.tags, payload.id);
-                return assign({}, state, {tags: tags});
+                return assign({}, state, {tags: removeTag(state.tags, payload.id)});
             case 'REMOVE_ALL_TAGS':
                 return assign({}, state, {tags: []});
             case 'SET_ENABLED':

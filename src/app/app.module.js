@@ -32,15 +32,9 @@ function showDebugMessage(message) {
     liNode.appendChild(getObjectHtml(message));
 }
 
-function showTags(data) {
-    removeChildNodes("tags");
-    var divNode=$("tags");
-    divNode.appendChild(getObjectHtml(data));
-}
-
 window.addEventListener("load", function (event) {
     //var host = window.document.location.host.replace(/:.*/, '');
-    var host = 'lulpreserv3.axiell.local';
+    var host = 'lulpreserv3';
     var port = 7000;
     var axRfidClient = new AxRfid.Client({host: host, port: port, isDebug: true});
     var btnCommand = $("btnCommand");
@@ -48,15 +42,45 @@ window.addEventListener("load", function (event) {
     var btnDisconnect = $("btnDisconnect");
     var btnClear = $("btnClear");
     var btnReload = $("btnReload");
+    var btnCheckout = $("btnCheckout");
+    var btnCheckin = $("btnCheckin");
     var inputMessage = $("inputMessage");
+    var tagStoreData=[];
     var debugSubscription;
     var tagStoreSubscription;
+
+    function showTagStoreData() {
+        removeChildNodes("tagStoreData");
+        var divNode=$("tagStoreData");
+        divNode.appendChild(getObjectHtml(tagStoreData));
+    }
+
+    function setCheckoutState(isActivated) {
+        var tags=tagStoreData.tags;
+        tags.forEach(function (tag, index) {
+            if (tag.isComplete) {
+                var result = axRfidClient.setCheckoutState(tag.id,isActivated);
+                var subscription = result.subscribe(
+                    function (result) {
+                    },
+                    function (e) {
+                        console.error('error: %s', e);
+                    },
+                    function () {
+                    }
+                );
+                subscription.dispose();
+            }
+        });
+    }
 
     function updateToolbar() {
         btnCommand.disabled = !axRfidClient.isConnected();
         btnConnect.disabled = axRfidClient.isConnected();
         btnDisconnect.disabled = !axRfidClient.isConnected();
         btnReload.disabled = !axRfidClient.isConnected();
+        btnCheckout.disabled = !axRfidClient.isConnected();
+        btnCheckin.disabled = !axRfidClient.isConnected();
     }
 
     btnCommand.addEventListener("click", function (event) {
@@ -64,14 +88,14 @@ window.addEventListener("load", function (event) {
         var result = axRfidClient.sendMessage(JSON.parse(messageAsString));
         var subscription=result.subscribe(
             function (message) {
-                subscription.dispose();
-            },
+             },
             function (e) {
                 console.error('error: %s', e);
             },
             function () {
             }
         );
+        subscription.dispose();
     });
     btnConnect.addEventListener("click", function (event) {
         axRfidClient.connect();
@@ -91,7 +115,8 @@ window.addEventListener("load", function (event) {
         );
         tagStoreSubscription=axRfidClient.getTagStore().subscribe(function (data) {
             console.log(data);
-            showTags(data);
+            tagStoreData=data;
+            showTagStoreData();
         });
         updateToolbar();
     });
@@ -104,6 +129,12 @@ window.addEventListener("load", function (event) {
     });
     btnReload.addEventListener("click", function (event) {
         axRfidClient.reload();
+    });
+    btnCheckout.addEventListener("click", function (event) {
+        setCheckoutState(false);
+    });
+    btnCheckin.addEventListener("click", function (event) {
+        setCheckoutState(true);
     });
     updateToolbar();
 });
