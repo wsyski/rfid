@@ -5,6 +5,16 @@ var AxRfidStore = require('./ax-rfid-store');
 (function (exports) {
     'use strict';
 
+    function RfidError(cmd,message) {
+        this.name = 'RfidError';
+        this.cmd = cmd;
+        this.message = message || 'Rfid error';
+        this.stack = (new Error()).stack;
+    }
+    RfidError.prototype = Object.create(Error.prototype);
+    RfidError.prototype.constructor = RfidError;
+
+
     function Client(overrideConfig) {
         var config = assign({}, {host: "localhost", port: 7000, isDebug: false}, overrideConfig);
         var debugSubject;
@@ -16,7 +26,7 @@ var AxRfidStore = require('./ax-rfid-store');
         function debugMessage(action, message) {
             if (config.isDebug) {
                 debugSubject.onNext({"action": action, "message": message});
-                console.log("action: %s message: %s", action, message);
+                console.log("action: %s message: %s", action, JSON.stringify(message));
             }
         }
 
@@ -26,7 +36,7 @@ var AxRfidStore = require('./ax-rfid-store');
                 debugMessage("request", message);
                 ws.onNext(messageAsString);
                 var result = new Rx.ReplaySubject(1);
-                queue.push(result);
+                queue.push({"result": result, "message": message});
                 return result;
             }
             else {
@@ -39,16 +49,17 @@ var AxRfidStore = require('./ax-rfid-store');
                 var result = sendMessage(message);
                 var subscription = result.subscribe(
                     function (result) {
-                         callback(result);
+                        callback(result);
                     },
                     function (e) {
+                        subscription.dispose();
                         console.error('error: %s', e);
                     },
                     function () {
+                        subscription.dispose();
                     }
                 );
-                subscription.dispose();
-            }
+              }
             else {
                 console.error("Not connected");
             }
@@ -71,8 +82,9 @@ var AxRfidStore = require('./ax-rfid-store');
                     var closingObserver = Rx.Observer.create(function () {
                         console.log('Disconnecting');
                         debugSubject.dispose();
-                        debugSubject=null;
+                        debugSubject = null;
                         ws = null;
+                        queue = [];
                     }.bind(this));
 
                     ws = Rx.DOM.fromWebSocket("ws://" + config.host + ":" + config.port, null, openObserver, closingObserver);
@@ -82,8 +94,7 @@ var AxRfidStore = require('./ax-rfid-store');
                             var messageAsString = e.data;
                             var message = JSON.parse(messageAsString);
                             debugMessage("response", message);
-                            var cmd = message.cmd;
-                            switch (cmd) {
+                            switch (message.cmd) {
                                 case "tag":
                                     var reason = message.reason;
                                     var id = message.id;
@@ -108,9 +119,15 @@ var AxRfidStore = require('./ax-rfid-store');
                                     break;
                                 default:
                                     if (queue.length > 0) {
-                                        var subject = queue.shift();
-                                        subject.onNext(message);
-                                        subject.onCompleted();
+                                        var item = queue.shift();
+                                        var result = item.result;
+                                        if (message.cmd==="error") {
+                                            result.onError(new RfidError(message.incmd,message.result));
+                                        }
+                                        else {
+                                            result.onNext(message);
+                                            result.onCompleted();
+                                        }
                                     }
                                     else {
                                         console.error("Unexpected message: " + messageAsString);

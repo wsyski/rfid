@@ -45,31 +45,42 @@ window.addEventListener("load", function (event) {
     var btnCheckout = $("btnCheckout");
     var btnCheckin = $("btnCheckin");
     var inputMessage = $("inputMessage");
-    var tagStoreData=[];
+    var tagStoreData = [];
     var debugSubscription;
     var tagStoreSubscription;
 
+    function onError(e) {
+        console.error(e);
+        if (e.name === "RfidError") {
+            alert('Rfid error cmd:' + e.cmd + ' message: ' + e.message);
+        }
+        else {
+            alert(e.message);
+        }
+    }
+
     function showTagStoreData() {
         removeChildNodes("tagStoreData");
-        var divNode=$("tagStoreData");
+        var divNode = $("tagStoreData");
         divNode.appendChild(getObjectHtml(tagStoreData));
     }
 
     function setCheckoutState(isActivated) {
-        var tags=tagStoreData.tags;
+        var tags = tagStoreData.tags;
         tags.forEach(function (tag, index) {
             if (tag.isComplete) {
-                var result = axRfidClient.setCheckoutState(tag.id,isActivated);
+                var result = axRfidClient.setCheckoutState(tag.id, isActivated);
                 var subscription = result.subscribe(
-                    function (result) {
+                    function (message) {
                     },
                     function (e) {
-                        console.error('error: %s', e);
+                        subscription.dispose();
+                        onError(e);
                     },
                     function () {
+                        subscription.dispose();
                     }
                 );
-                subscription.dispose();
             }
         });
     }
@@ -86,36 +97,35 @@ window.addEventListener("load", function (event) {
     btnCommand.addEventListener("click", function (event) {
         var messageAsString = inputMessage.value;
         var result = axRfidClient.sendMessage(JSON.parse(messageAsString));
-        var subscription=result.subscribe(
+        var subscription = result.subscribe(
             function (message) {
-             },
+            },
             function (e) {
-                console.error('error: %s', e);
+                subscription.dispose();
+                onError(e);
             },
             function () {
+                subscription.dispose();
             }
         );
-        subscription.dispose();
+
     });
     btnConnect.addEventListener("click", function (event) {
         axRfidClient.connect();
-        debugSubscription=axRfidClient.getDebugSubject().subscribe(
+        debugSubscription = axRfidClient.getDebugSubject().subscribe(
             function (message) {
                 showDebugMessage(message);
             },
             function (e) {
-                // errors and "unclean" closes land here
-                console.error('error: %s', e);
+                console.error(e);
             },
             function () {
                 tagStoreSubscription.unsubscribe();
                 debugSubscription.dispose();
-                console.info('Disconnected from debug subject');
             }
         );
-        tagStoreSubscription=axRfidClient.getTagStore().subscribe(function (data) {
-            console.log(data);
-            tagStoreData=data;
+        tagStoreSubscription = axRfidClient.getTagStore().subscribe(function (data) {
+            tagStoreData = data;
             showTagStoreData();
         });
         updateToolbar();
