@@ -12,14 +12,6 @@ var createRxStore = require('rx-store').createRxStore;
     }
 
     function tagReducer(state, action) {
-        function indexOf(tags, id) {
-            tags.forEach(function (tag, index) {
-                if (tag.id == id) {
-                    return index;
-                }
-            });
-            return -1;
-        }
 
         function removeTag(tags, id) {
             return tags.filter(function (tag) {
