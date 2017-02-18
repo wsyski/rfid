@@ -36,7 +36,6 @@ window.addEventListener("load", function (event) {
     //var host = window.document.location.host.replace(/:.*/, '');
     var host = 'lulpreserv3';
     var port = 7000;
-    var axRfidClient = new AxRfid.Client({host: host, port: port, isDebug: true});
     var btnCommand = $("btnCommand");
     var btnConnect = $("btnConnect");
     var btnDisconnect = $("btnDisconnect");
@@ -48,6 +47,18 @@ window.addEventListener("load", function (event) {
     var tagStoreData = [];
     var debugSubscription;
     var tagStoreSubscription;
+    var axRfidClient = new AxRfid.Client({host: host, port: port, isDebug: true});
+    debugSubscription = axRfidClient.getDebugSubject().subscribe(
+        function (message) {
+            showDebugMessage(message);
+        },
+        function (e) {
+            console.error(e);
+        },
+        function () {
+            debugSubscription.dispose();
+        }
+    );
 
     function onError(e) {
         console.error(e);
@@ -111,26 +122,16 @@ window.addEventListener("load", function (event) {
 
     });
     btnConnect.addEventListener("click", function (event) {
-        axRfidClient.connect();
-        debugSubscription = axRfidClient.getDebugSubject().subscribe(
-            function (message) {
-                showDebugMessage(message);
-            },
-            function (e) {
-                console.error(e);
-            },
-            function () {
-                tagStoreSubscription.unsubscribe();
-                debugSubscription.dispose();
-            }
-        );
+        axRfidClient.connect("workplace");
         tagStoreSubscription = axRfidClient.getTagStore().subscribe(function (data) {
             tagStoreData = data;
             showTagStoreData();
         });
         updateToolbar();
     });
+
     btnDisconnect.addEventListener("click", function (event) {
+        tagStoreSubscription.unsubscribe();
         axRfidClient.disconnect();
         updateToolbar();
     });

@@ -30,8 +30,21 @@ var createRxStore = require('rx-store').createRxStore;
                 return assign({}, state, {tags: []});
             case 'SET_ENABLED':
                 return assign({}, state, {isEnabled: payload.isEnabled});
-            case 'SET_ACTIVE':
-                return assign({}, state, {isActive: payload.isActive});
+            case 'SET_READY':
+                return assign({}, state, {isReady: payload.isReady});
+            case 'SET_CHECKOUT_STATE':
+                return assign({}, state, {
+                    tags: state.tags.map(function (tag) {
+                        var newTag=new Tag(tag.id, tag.reader, tag.isComplete);
+                        if (tag.id === payload.id) {
+                            newTag.isCheckoutState=payload.isCheckoutState;
+                        }
+                        else {
+                            newTag.isCheckoutState=tag.isCheckoutState;
+                        }
+                        return newTag;
+                    })
+                });
             default:
                 return state;
         }
@@ -66,10 +79,17 @@ var createRxStore = require('rx-store').createRxStore;
             };
         }
 
-        function setActive(isActive) {
+        function setCheckoutState(id, isCheckoutState) {
             return {
-                type: 'SET_ACTIVE',
-                payload: {isActive: isActive}
+                type: 'SET_CHECKOUT_STATE',
+                payload: {id: id, isCheckoutState: isCheckoutState}
+            };
+        }
+
+        function setReady(isReady) {
+            return {
+                type: 'SET_READY',
+                payload: {isReady: isReady}
             };
         }
 
@@ -92,8 +112,12 @@ var createRxStore = require('rx-store').createRxStore;
                 var action = setEnabled(isEnabled);
                 store.dispatch(action);
             },
-            setActive: function (isActive) {
-                var action = setActive(isActive);
+            setReady: function (isReady) {
+                var action = setReady(isReady);
+                store.dispatch(action);
+            },
+            setCheckoutState: function (id, isCheckoutState) {
+                var action = setCheckoutState(id, isCheckoutState);
                 store.dispatch(action);
             },
             subscribe: function (callback) {
