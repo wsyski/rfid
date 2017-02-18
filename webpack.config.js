@@ -15,6 +15,7 @@ var ENV = process.env.npm_lifecycle_event;
 var isTest = ENV === 'test' || ENV === 'test-watch';
 var isProd = ENV === 'build';
 console.log('ENV: '+ENV);
+var indexFileName='rfid-client.html';
 
 module.exports = function makeWebpackConfig() {
   /**
@@ -179,7 +180,8 @@ module.exports = function makeWebpackConfig() {
     // Render index.html
     config.plugins.push(
       new HtmlWebpackPlugin({
-        template: './src/public/index.html',
+        filename: indexFileName,
+        template: './src/public/'+indexFileName,
         inject: 'body'
       }),
 
