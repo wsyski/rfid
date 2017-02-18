@@ -16,6 +16,7 @@ var isTest = ENV === 'test' || ENV === 'test-watch';
 var isProd = ENV === 'build';
 console.log('ENV: '+ENV);
 var indexFileName='rfid-client.html';
+var appFileName='rfid-client.js';
 
 module.exports = function makeWebpackConfig() {
   /**
@@ -32,7 +33,7 @@ module.exports = function makeWebpackConfig() {
    * Karma will set this when it's a test build
    */
   config.entry = isTest ? void 0 : {
-    app: './src/app/app.module.js',
+    app: './src/app/'+appFileName,
     vendor: ['angular','angular-animate','angular-route','angular-resource','rx-lite','rx-dom','rx-store','object-assign']
   };
 
