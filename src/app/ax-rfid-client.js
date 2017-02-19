@@ -3,7 +3,7 @@
 
     var assign = require('object-assign');
     var Rx = require('rx-dom');
-    var TagStore = require('./ax-rfid-store');
+    var AxRfidTagStore = require('./ax-rfid-store');
 
     function RfidError(message, cmd) {
         this.name = 'RfidError';
@@ -24,7 +24,7 @@
         var ws;
         var tagStore;
         var subscription;
-        var tagStore = new TagStore();
+        var tagStore = new AxRfidTagStore();
 
         function noop() {
         }

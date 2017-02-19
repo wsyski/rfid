@@ -79,8 +79,8 @@ window.addEventListener("load", function (event) {
     }
 
     function showTagStoreData() {
-        removeChildNodes("tagStoreData");
-        var divNode = $("tagStoreData");
+        removeChildNodes("tagStore");
+        var divNode = $("tagStore");
         divNode.appendChild(getObjectHtml(tagStoreData));
     }
 
