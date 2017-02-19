@@ -1,6 +1,6 @@
 'use strict';
 
-require('../style/app.css');
+require('../style/rfid-client.css');
 var AxRfidClient = require('./ax-rfid-client');
 
 function $(id) {
