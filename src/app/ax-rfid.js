@@ -5,10 +5,12 @@ var AxRfidStore = require('./ax-rfid-store');
 (function (exports) {
     'use strict';
 
-    function RfidError(cmd, message) {
+    function RfidError(message, cmd) {
         this.name = 'RfidError';
-        this.cmd = cmd;
         this.message = message || 'Rfid error';
+        if (cmd) {
+            this.cmd = cmd;
+        }
         this.stack = (new Error()).stack;
     }
 
@@ -17,11 +19,12 @@ var AxRfidStore = require('./ax-rfid-store');
 
     function Client(overrideConfig) {
         var config = assign({}, {host: "localhost", port: 7000, isDebug: false}, overrideConfig);
-        var debugSubject=new Rx.Subject();
+        var debugSubject = new Rx.Subject();
         var queue = [];
         var ws;
         var tagStore;
         var subscription;
+        var tagStore = new AxRfidStore.TagStore();
 
         function noop() {
         }
@@ -31,7 +34,7 @@ var AxRfidStore = require('./ax-rfid-store');
                 var item = queue.shift();
                 var result = item.result;
                 if (message.cmd === "error") {
-                    result.onError(new RfidError(message.incmd, message.result));
+                    result.onError(new RfidError(message.result, message.incmd));
                 }
                 else {
                     result.onNext(message);
@@ -39,7 +42,7 @@ var AxRfidStore = require('./ax-rfid-store');
                 }
             }
             else {
-                console.error("Unexpected message: " + messageAsString);
+                result.onError(new RfidError("Unexpected message: " + messageAsString, message.cmd));
             }
         }
 
@@ -51,38 +54,33 @@ var AxRfidStore = require('./ax-rfid-store');
         }
 
         function sendMessage(message) {
+            var result = new Rx.ReplaySubject(1);
             if (ws) {
                 var messageAsString = JSON.stringify(message);
                 debugMessage("request", message);
                 ws.onNext(messageAsString);
-                var result = new Rx.ReplaySubject(1);
                 queue.push({"result": result, "message": message});
                 return result;
             }
             else {
-                console.error("Not connected");
+                result.onError(new RfidError("Not connected", message.cmd));
             }
         }
 
         function sendMessageWithCallback(message, callback) {
-            if (ws) {
-                var result = sendMessage(message);
-                var subscription = result.subscribe(
-                    function (result) {
-                        callback(result);
-                    },
-                    function (e) {
-                        subscription.dispose();
-                        console.error('error: %s', e);
-                    },
-                    function () {
-                        subscription.dispose();
-                    }
-                );
-            }
-            else {
-                console.error("Not connected");
-            }
+            var result = sendMessage(message);
+            var subscription = result.subscribe(
+                function (result) {
+                    callback(result);
+                },
+                function (e) {
+                    subscription.dispose();
+                    console.error('error: %s', e);
+                },
+                function () {
+                    subscription.dispose();
+                }
+            );
         }
 
         function setClientName(clientName) {
@@ -106,17 +104,18 @@ var AxRfidStore = require('./ax-rfid-store');
             else {
                 var openObserver = Rx.Observer.create(function (e) {
                     console.log('Connected');
+                    tagStore.setConnected(true);
                     queue = [];
                     setClientName(clientName);
                 }.bind(this));
 
                 var closingObserver = Rx.Observer.create(function () {
-                    console.log('Disconnecting');
+                    console.log('Disconnected');
+                    tagStore.setConnected(false);
                     ws = null;
                 }.bind(this));
 
                 ws = Rx.DOM.fromWebSocket("ws://" + config.host + ":" + config.port, null, openObserver, closingObserver);
-                tagStore = new AxRfidStore.TagStore();
                 subscription = ws.subscribe(
                     function (e) {
                         var messageAsString = e.data;
@@ -156,7 +155,7 @@ var AxRfidStore = require('./ax-rfid-store');
                                 handleMessage(message);
                                 break;
                             case "setCheckoutState":
-                                tagStore.setCheckoutState(message.id,message.security==="Deactivated");
+                                tagStore.setCheckoutState(message.id, message.security === "Deactivated");
                                 handleMessage(message);
                                 break;
                             default:
@@ -196,10 +195,6 @@ var AxRfidStore = require('./ax-rfid-store');
             },
             setCheckoutState: function (id, isActivated) {
                 return setCheckoutState(id, isActivated);
-            },
-
-            isConnected: function () {
-                return !!ws;
             },
 
             getDebugSubject: function () {

@@ -14,9 +14,9 @@ var CopyWebpackPlugin = require('copy-webpack-plugin');
 var ENV = process.env.npm_lifecycle_event;
 var isTest = ENV === 'test' || ENV === 'test-watch';
 var isProd = ENV === 'build';
-console.log('ENV: '+ENV);
 var indexFileName='rfid-client.html';
 var appFileName='rfid-client.js';
+console.log('ENV: '+ENV);
 
 module.exports = function makeWebpackConfig() {
   /**
@@ -205,18 +205,13 @@ module.exports = function makeWebpackConfig() {
       // Reference: http://webpack.github.io/docs/list-of-plugins.html#uglifyjsplugin
       // Minify all javascript, switch loaders to minimizing mode
       new webpack.optimize.UglifyJsPlugin({
-        /*
           debug: true,
           minimize: false,
+          compress: false,
+          beautify: true,
           mangle: false,
           sourceMap: true,
-          output: {
-              comments: true
-          },
-          compressor: {
-              warnings: true
-          }
-          */
+          comments: true
       }),
 
       // Copy assets from the public folder

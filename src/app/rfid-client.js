@@ -44,7 +44,7 @@ window.addEventListener("load", function (event) {
     var btnCheckout = $("btnCheckout");
     var btnCheckin = $("btnCheckin");
     var inputMessage = $("inputMessage");
-    var tagStoreData = [];
+    var tagStoreData;
     var debugSubscription;
     var tagStoreSubscription;
     var axRfidClient = new AxRfid.Client({host: host, port: port, isDebug: true});
@@ -59,6 +59,11 @@ window.addEventListener("load", function (event) {
             debugSubscription.dispose();
         }
     );
+    tagStoreSubscription = axRfidClient.getTagStore().subscribe(function (data) {
+        tagStoreData = data;
+        showTagStoreData();
+        updateToolbar();
+    });
 
     function onError(e) {
         console.error(e);
@@ -97,12 +102,13 @@ window.addEventListener("load", function (event) {
     }
 
     function updateToolbar() {
-        btnCommand.disabled = !axRfidClient.isConnected();
-        btnConnect.disabled = axRfidClient.isConnected();
-        btnDisconnect.disabled = !axRfidClient.isConnected();
-        btnReload.disabled = !axRfidClient.isConnected();
-        btnCheckout.disabled = !axRfidClient.isConnected();
-        btnCheckin.disabled = !axRfidClient.isConnected();
+        var isConnected = tagStoreData.isConnected;
+        btnCommand.disabled = !isConnected;
+        btnConnect.disabled = isConnected;
+        btnDisconnect.disabled = !isConnected;
+        btnReload.disabled = !isConnected;
+        btnCheckout.disabled = !isConnected;
+        btnCheckin.disabled = !isConnected;
     }
 
     btnCommand.addEventListener("click", function (event) {
@@ -123,17 +129,11 @@ window.addEventListener("load", function (event) {
     });
     btnConnect.addEventListener("click", function (event) {
         axRfidClient.connect("workplace");
-        tagStoreSubscription = axRfidClient.getTagStore().subscribe(function (data) {
-            tagStoreData = data;
-            showTagStoreData();
-        });
-        updateToolbar();
     });
 
     btnDisconnect.addEventListener("click", function (event) {
         tagStoreSubscription.unsubscribe();
         axRfidClient.disconnect();
-        updateToolbar();
     });
     btnClear.addEventListener("click", function (event) {
         removeChildNodes("debug");
@@ -147,6 +147,5 @@ window.addEventListener("load", function (event) {
     btnCheckin.addEventListener("click", function (event) {
         setCheckoutState(true);
     });
-    updateToolbar();
 });
 

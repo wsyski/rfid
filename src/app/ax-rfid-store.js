@@ -3,7 +3,7 @@ var createRxStore = require('rx-store').createRxStore;
 
 (function (exports) {
     'use strict';
-    var initialState = {isReady: true, isEnabled: false, tags: []};
+    var initialState = {isConnected: false, isReady: false, isEnabled: false, tags: []};
 
     function Tag(id, reader, isComplete) {
         this.id = id;
@@ -11,7 +11,7 @@ var createRxStore = require('rx-store').createRxStore;
         this.isComplete = isComplete;
     }
 
-    function tagReducer(state, action) {
+    function tagStoreReducer(state, action) {
 
         function removeTag(tags, id) {
             return tags.filter(function (tag) {
@@ -22,6 +22,8 @@ var createRxStore = require('rx-store').createRxStore;
         var payload = action.payload;
 
         switch (action.type) {
+            case 'SET_CONNECTED':
+                return assign({}, initialState, {isConnected: payload.isConnected, isReady: payload.isConnected});
             case 'ADD_OR_REPLACE_TAG':
                 return assign({}, state, {tags: removeTag(state.tags, payload.id).concat(new Tag(payload.id, payload.reader, payload.isComplete))});
             case 'REMOVE_TAG':
@@ -79,13 +81,6 @@ var createRxStore = require('rx-store').createRxStore;
             };
         }
 
-        function setCheckoutState(id, isCheckoutState) {
-            return {
-                type: 'SET_CHECKOUT_STATE',
-                payload: {id: id, isCheckoutState: isCheckoutState}
-            };
-        }
-
         function setReady(isReady) {
             return {
                 type: 'SET_READY',
@@ -93,7 +88,21 @@ var createRxStore = require('rx-store').createRxStore;
             };
         }
 
-        var store = createRxStore(tagReducer, initialState);
+        function setCheckoutState(id, isCheckoutState) {
+            return {
+                type: 'SET_CHECKOUT_STATE',
+                payload: {id: id, isCheckoutState: isCheckoutState}
+            };
+        }
+
+        function setConnected(isConnected) {
+            return {
+                type: 'SET_CONNECTED',
+                payload: {isConnected: isConnected}
+            };
+        }
+
+        var store = createRxStore(tagStoreReducer, initialState);
 
         return {
             addOrReplaceTag: function (id, reader, isComplete) {
@@ -118,6 +127,10 @@ var createRxStore = require('rx-store').createRxStore;
             },
             setCheckoutState: function (id, isCheckoutState) {
                 var action = setCheckoutState(id, isCheckoutState);
+                store.dispatch(action);
+            },
+            setConnected: function (isConnected) {
+                var action = setConnected(isConnected);
                 store.dispatch(action);
             },
             subscribe: function (callback) {
