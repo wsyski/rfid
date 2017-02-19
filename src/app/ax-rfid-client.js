@@ -1,9 +1,9 @@
-var assign = require('object-assign');
-var Rx = require('rx-dom');
-var AxRfidStore = require('./ax-rfid-store');
-
 (function (exports) {
     'use strict';
+
+    var assign = require('object-assign');
+    var Rx = require('rx-dom');
+    var TagStore = require('./ax-rfid-store');
 
     function RfidError(message, cmd) {
         this.name = 'RfidError';
@@ -24,7 +24,7 @@ var AxRfidStore = require('./ax-rfid-store');
         var ws;
         var tagStore;
         var subscription;
-        var tagStore = new AxRfidStore.TagStore();
+        var tagStore = new TagStore();
 
         function noop() {
         }
@@ -193,8 +193,8 @@ var AxRfidStore = require('./ax-rfid-store');
             reload: function () {
                 reload()
             },
-            setCheckoutState: function (id, isActivated) {
-                return setCheckoutState(id, isActivated);
+            setCheckoutState: function (id, isCheckoutState) {
+                return setCheckoutState(id, isCheckoutState);
             },
 
             getDebugSubject: function () {
@@ -216,4 +216,4 @@ var AxRfidStore = require('./ax-rfid-store');
 }((window.AxRfid = window.AxRfid || {})));
 
 
-module.exports = AxRfid;
+module.exports = AxRfid.Client;

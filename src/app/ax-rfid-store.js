@@ -1,8 +1,10 @@
-var assign = require('object-assign');
-var createRxStore = require('rx-store').createRxStore;
 
 (function (exports) {
     'use strict';
+
+    var assign = require('object-assign');
+    var createRxStore = require('rx-store').createRxStore;
+
     var initialState = {isConnected: false, isReady: false, isEnabled: false, tags: []};
 
     function Tag(id, reader, isComplete) {
@@ -141,7 +143,7 @@ var createRxStore = require('rx-store').createRxStore;
 
     exports.TagStore = TagStore;
 
-}((window.AxRfidStore = window.AxRfidStore || {})));
+}((window.AxRfid = window.AxRfid || {})));
 
 
-module.exports = AxRfidStore;
+module.exports = AxRfid.TagStore;

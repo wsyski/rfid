@@ -1,7 +1,7 @@
 'use strict';
 
 require('../style/app.css');
-var AxRfid = require('./ax-rfid');
+var AxRfidClient = require('./ax-rfid-client');
 
 function $(id) {
     return document.getElementById(id);
@@ -32,6 +32,12 @@ function showDebugMessage(message) {
     liNode.appendChild(getObjectHtml(message));
 }
 
+var debugSubscription;
+var tagStoreSubscription;
+window.addEventListener("unload", function (event) {
+    debugSubscription.dispose();
+    tagStoreSubscription.unsubscribe();
+});
 window.addEventListener("load", function (event) {
     //var host = window.document.location.host.replace(/:.*/, '');
     var host = 'lulpreserv3';
@@ -45,9 +51,7 @@ window.addEventListener("load", function (event) {
     var btnCheckin = $("btnCheckin");
     var inputMessage = $("inputMessage");
     var tagStoreData;
-    var debugSubscription;
-    var tagStoreSubscription;
-    var axRfidClient = new AxRfid.Client({host: host, port: port, isDebug: true});
+    var axRfidClient = new AxRfidClient({host: host, port: port, isDebug: true});
     debugSubscription = axRfidClient.getDebugSubject().subscribe(
         function (message) {
             showDebugMessage(message);
@@ -56,7 +60,6 @@ window.addEventListener("load", function (event) {
             console.error(e);
         },
         function () {
-            debugSubscription.dispose();
         }
     );
     tagStoreSubscription = axRfidClient.getTagStore().subscribe(function (data) {
@@ -81,11 +84,11 @@ window.addEventListener("load", function (event) {
         divNode.appendChild(getObjectHtml(tagStoreData));
     }
 
-    function setCheckoutState(isActivated) {
+    function setCheckoutState(isCheckoutState) {
         var tags = tagStoreData.tags;
         tags.forEach(function (tag, index) {
             if (tag.isComplete) {
-                var result = axRfidClient.setCheckoutState(tag.id, isActivated);
+                var result = axRfidClient.setCheckoutState(tag.id, isCheckoutState);
                 var subscription = result.subscribe(
                     function (message) {
                     },
@@ -132,7 +135,6 @@ window.addEventListener("load", function (event) {
     });
 
     btnDisconnect.addEventListener("click", function (event) {
-        tagStoreSubscription.unsubscribe();
         axRfidClient.disconnect();
     });
     btnClear.addEventListener("click", function (event) {
@@ -142,10 +144,10 @@ window.addEventListener("load", function (event) {
         axRfidClient.reload();
     });
     btnCheckout.addEventListener("click", function (event) {
-        setCheckoutState(false);
+        setCheckoutState(true);
     });
     btnCheckin.addEventListener("click", function (event) {
-        setCheckoutState(true);
+        setCheckoutState(false);
     });
 });
 
