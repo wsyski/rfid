@@ -20,11 +20,10 @@
     function Client(overrideConfig) {
         var config = assign({}, {host: "localhost", port: 7000, isDebug: false}, overrideConfig);
         var debugSubject = new Rx.Subject();
+        var tagStore = new AxRfidTagStore();
         var queue = [];
         var ws;
-        var tagStore;
-        var subscription;
-        var tagStore = new AxRfidTagStore();
+        var wsSubscription;
 
         function noop() {
         }
@@ -116,7 +115,7 @@
                 }.bind(this));
 
                 ws = Rx.DOM.fromWebSocket("ws://" + config.host + ":" + config.port, null, openObserver, closingObserver);
-                subscription = ws.subscribe(
+                wsSubscription = ws.subscribe(
                     function (e) {
                         var messageAsString = e.data;
                         var message = JSON.parse(messageAsString);
@@ -176,7 +175,7 @@
 
         function disconnect() {
             if (ws) {
-                subscription.dispose();
+                wsSubscription.dispose();
             }
             else {
                 console.error("Not connected");
