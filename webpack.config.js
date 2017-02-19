@@ -16,6 +16,8 @@ var isTest = ENV === 'test' || ENV === 'test-watch';
 var isProd = ENV === 'build';
 var indexFileName='rfid-client.html';
 var appFileName='rfid-client.js';
+//var indexFileName='index.html';
+//var appFileName='boot.js';
 console.log('ENV: '+ENV);
 
 module.exports = function makeWebpackConfig() {
@@ -34,7 +36,7 @@ module.exports = function makeWebpackConfig() {
    */
   config.entry = isTest ? void 0 : {
     app: './src/app/'+appFileName,
-    vendor: ['angular','angular-animate','angular-route','angular-resource','rx-lite','rx-dom','rx-store','object-assign']
+    vendor: ['angular','angular-animate','angular-resource','angular-aria','angular-material','angular-messages','rx-lite','rx-dom','rx-store','object-assign']
   };
 
   /**
@@ -183,7 +185,7 @@ module.exports = function makeWebpackConfig() {
       new HtmlWebpackPlugin({
         filename: indexFileName,
         template: './src/public/'+indexFileName,
-        inject: 'body'
+        inject: 'head'
       }),
 
       // Reference: https://github.com/webpack/extract-text-webpack-plugin
