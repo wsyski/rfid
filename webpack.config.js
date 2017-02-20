@@ -14,10 +14,11 @@ var CopyWebpackPlugin = require('copy-webpack-plugin');
 var ENV = process.env.npm_lifecycle_event;
 var isTest = ENV === 'test' || ENV === 'test-watch';
 var isProd = ENV === 'build';
+//var indexFileName='index.html';
+//var appFileName='app.js';
 var indexFileName='rfid-client.html';
 var appFileName='rfid-client.js';
-//var indexFileName='index.html';
-//var appFileName='boot.js';
+
 console.log('ENV: '+ENV);
 
 module.exports = function makeWebpackConfig() {
@@ -36,7 +37,7 @@ module.exports = function makeWebpackConfig() {
    */
   config.entry = isTest ? void 0 : {
     app: './src/app/'+appFileName,
-    vendor: ['angular','angular-animate','angular-resource','angular-aria','angular-material','angular-messages','rx-lite','rx-dom','rx-store','object-assign']
+    vendor: ['angular','angular-animate','angular-aria','angular-messages','angular-material','rx-lite','rx-dom','rx-store','object-assign']
   };
 
   /**

@@ -1,28 +1,80 @@
-// Load libraries
-import angular from 'angular';
-
-import 'angular-animate';
-import 'angular-aria';
-import 'angular-material';
-
-import AppController from './AppController';
-import Users from './users/Users';
+'use strict';
 
 require('../style/app.css');
-export default angular.module( 'starter-app', [ 'ngMaterial', Users.name ] )
-  .config(($mdIconProvider, $mdThemingProvider) => {
-    // Register the user `avatar` icons
-    $mdIconProvider
-      .defaultIconSet("./assets/svg/avatars.svg", 128)
-      .icon("menu", "./assets/svg/menu.svg", 24)
-      .icon("share", "./assets/svg/share.svg", 24)
-      .icon("google_plus", "./assets/svg/google_plus.svg", 24)
-      .icon("hangouts", "./assets/svg/hangouts.svg", 24)
-      .icon("twitter", "./assets/svg/twitter.svg", 24)
-      .icon("phone", "./assets/svg/phone.svg", 24);
+require('../../node_modules/angular-material/angular-material.css');
 
-    $mdThemingProvider.theme('default')
-      .primaryPalette('brown')
-      .accentPalette('red');
-  })
-  .controller('AppController', AppController);
+var angular = require('angular'),
+    ngAnimate = require('angular-animate'),
+    ngAria = require('angular-aria'),
+    ngMessages = require('angular-messages'),
+    ngMaterial = require('angular-material');
+
+var app = angular.module('myApp', ['ngMaterial']);
+app.controller('mainCtrl', function($scope,msgService) {
+
+    $scope.name = "Observer App Example";
+    $scope.msg = 'Message';
+    $scope.broadcastFn = function(){
+        msgService.broadcast($scope.msg);
+    }
+});
+
+app.component("boxA",  {
+    bindings: {},
+    controller: function(msgService) {
+        var boxA = this;
+        boxA.msgService = msgService;
+
+        boxA.msg = '';
+        boxA.subscription = boxA.msgService.subscribe(function(obj) {
+            console.log('Listerner A');
+            boxA.msg = obj;
+        });
+        boxA.unsubscribe=function(){
+            console.log('BoxA Unsubscribe');
+            boxA.msgService.usubscribe(boxA.subscription);
+
+        };
+
+    },
+    controllerAs: 'boxA',
+    templateUrl: "/boxa"
+});
+app.component("boxB",  {
+    bindings: {},
+    controller: function(msgService) {
+        var boxB = this;
+        boxB.msgService = msgService;
+
+
+        boxB.msg = '';
+        boxB.subscription = boxB.msgService.subscribe(function(obj) {
+            console.log('Listerner B');
+            boxB.msg = obj;
+        });
+
+        boxB.unsubscribe=function(){
+            console.log('BoxB Unsubscribe');
+            boxB.msgService.usubscribe(boxB.subscription);
+
+        };
+    },
+    controllerAs: 'boxB',
+    templateUrl: "/boxb"
+});
+
+app.factory('msgService', ['$http', function($http){
+    var msgSubject = new Rx.ReplaySubject();
+    return{
+        subscribe:function(subscription){
+            return msgSubject.subscribe(subscription);
+        },
+        usubscribe:function(subscription){
+            subscription.dispose();
+        },
+        broadcast:function(msg){
+            console.log('success');
+            msgSubject.onNext(msg);
+        }
+    }
+}]);

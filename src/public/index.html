@@ -1,49 +1,40 @@
 <!DOCTYPE html>
-<html lang="en" >
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="description" content="">
-  <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no" />
-
-  <title>Angular Material - Starter App</title>
-  <link rel='stylesheet' href='http://fonts.googleapis.com/css?family=Roboto:400,700'>
+    <meta charset="utf-8">
+    <meta name="description" content="RFID Client Example">
+    <link rel="icon" type="image/x-icon" href="/img/favicon.ico">
+    <title>RFID Client Example</title>
 </head>
 
-<body ng-cloak layout="column" ng-controller="AppController as app">
+<body>
+<div ng-app="myApp" ng-controller="mainCtrl">
+    <script type="text/ng-template" id="/boxa">
+        BoxA - Message Listener: </br>
+        <strong>{{boxA.msg}}</strong></br>
+        <md-button ng-click='boxA.unsubscribe()' class='md-warn'>Unsubscribe A</md-button>
+    </script>
+    <script type="text/ng-template" id="/boxb">
+        BoxB - Message Listener: </br>
+        <strong>{{boxB.msg}}</strong></br>
+        <md-button ng-click='boxB.unsubscribe()' class='md-warn'>Unsubscribe B</md-button>
+    </script>
 
-  <!-- Container #1 (see wireframe) -->
-  <md-toolbar layout="row" class="md-toolbar-tools">
-    <md-button class="menu md-icon-button" hide-gt-sm ng-click="app.toggleList()"
-               aria-label="Show User List">
-      <md-icon md-svg-icon="menu"></md-icon>
-    </md-button>
-    <h1>Angular Material - Starter App</h1>
-  </md-toolbar>
-
-  <!-- Container #2 -->
-  <div flex layout="row">
-
-    <!-- Container #3 -->
-    <md-sidenav class="md-whiteframe-4dp" md-is-locked-open="$mdMedia('gt-sm')"
-                md-component-id="left" ng-click="app.toggleList()">
-      <!-- Custom UsersList component -->
-      <users-list
-          users="app.users"
-          selected="app.selected"
-          on-selected="app.selectUser(user)">
-      </users-list>
-    </md-sidenav>
-
-    <!-- Container #4 -->
-    <md-content flex id="content">
-      <!-- Custom UserDetails component -->
-      <user-details
-          selected="app.selected" >
-      </user-details>
+    <md-content class='md-padding'>
+        <h3>
+            {{name}}
+        </h3>
+        <label>Enter Text To Broadcast</label>
+        <input ng-model='msg'/></br>
+        <md-button class='md-primary' ng-click='broadcastFn()'>Broadcast</md-button>
+        </br>
+        <h4>
+            Components
+        </h4>
+        <box-a></box-a>
+        </br>
+        <box-b></box-b>
     </md-content>
-
-  </div>
-
+</div>
 </body>
 </html>
