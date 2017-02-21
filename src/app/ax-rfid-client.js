@@ -16,9 +16,10 @@
 
     RfidError.prototype = Object.create(Error.prototype);
     RfidError.prototype.constructor = RfidError;
+    var defaultConfig={host: "localhost", port: 7000, readerProbeInterval: 30000, name: "rfidClient",isDebug: false};
 
     function Client(overrideConfig) {
-        var config = assign({}, {host: "localhost", port: 7000, isDebug: false}, overrideConfig);
+        var config = assign({}, defaultConfig, overrideConfig);
         var debugSubject = new Rx.Subject();
         var tagStore = new AxRfidTagStore();
         var queue = [];
@@ -73,7 +74,6 @@
                     callback(result);
                 },
                 function (e) {
-                    subscription.dispose();
                     console.error('error: %s', e);
                 },
                 function () {
@@ -82,8 +82,25 @@
             );
         }
 
-        function setClientName(clientName) {
-            sendMessageWithCallback({"cmd": "remoteName", "name": clientName}, noop);
+        function setClientName() {
+            sendMessageWithCallback({"cmd": "remoteName", "name": config.name}, noop);
+        }
+
+        function readerStatus() {
+            sendMessageWithCallback({"cmd": "readerStatus"}, noop);
+        }
+
+        function probeReaderStatus() {
+            var readerProbe = Rx.Observable.interval(config.readerProbeInterval);
+            return readerProbe.subscribe(
+                function (result) {
+                    readerStatus();
+                },
+                function (e) {
+                    console.error('error: %s', e);
+                },
+                noop()
+            );
         }
 
         function reload() {
@@ -96,22 +113,27 @@
         }
 
 
-        function connect(clientName) {
+        function connect() {
             if (ws) {
                 console.error("Already connected");
             }
             else {
+                var probeReaderSubscription;
                 var openObserver = Rx.Observer.create(function (e) {
                     console.log('Connected');
                     tagStore.setConnected(true);
                     queue = [];
-                    setClientName(clientName);
+                    setClientName();
+                    probeReaderSubscription=probeReaderStatus();
                 }.bind(this));
 
                 var closingObserver = Rx.Observer.create(function () {
                     console.log('Disconnected');
                     tagStore.setConnected(false);
                     ws = null;
+                    if (probeReaderSubscription) {
+                       probeReaderSubscription.dispose();
+                    }
                 }.bind(this));
 
                 ws = Rx.DOM.fromWebSocket("ws://" + config.host + ":" + config.port, null, openObserver, closingObserver);
@@ -141,11 +163,14 @@
                                 }
                                 break;
                             case "disabled":
-                                tagStore.setReady(false);
                                 tagStore.setEnabled(false);
                                 break;
                             case "enable":
                                 tagStore.setEnabled(true);
+                                handleMessage(message);
+                                break;
+                            case "readerStatus":
+                                tagStore.setReady(message.status==="online");
                                 handleMessage(message);
                                 break;
                             case "resend":
@@ -165,10 +190,7 @@
                         // errors and "unclean" closes land here
                         console.error('error: %s', e);
                     },
-                    function () {
-                        // the socket has been closed
-                        console.info('socket closed');
-                    }
+                    noop()
                 );
             }
         }
