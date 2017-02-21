@@ -14,10 +14,10 @@ var CopyWebpackPlugin = require('copy-webpack-plugin');
 var ENV = process.env.npm_lifecycle_event;
 var isTest = ENV === 'test' || ENV === 'test-watch';
 var isProd = ENV === 'build';
-//var indexFileName='index.html';
-//var appFileName='app.js';
-var indexFileName='rfid-client.html';
-var appFileName='rfid-client.js';
+var indexFileName='index.html';
+var appFileName='app.js';
+//var indexFileName='rfid-client.html';
+//var appFileName='rfid-client.js';
 
 console.log('ENV: '+ENV);
 

@@ -1,7 +1,9 @@
+<md-button class='md-primary' ng-click='$ctrl.connect()'>Connect</md-button>
+<md-button ng-click='$ctrl.disconnect()'>Disconnect</md-button>
 <div class="tag-store">
-  <span>isConnected:</span><span>{{$ctrl.isConnected}}</span><span>isReady:</span><span>{{$ctrl.isReady}}</span><span>isEnabled:</span><span>{{$ctrl.isEnabled}}</span>
+  <span>isConnected:</span><span>{{$ctrl.tagStore.isConnected}}</span><span>isReady:</span><span>{{$ctrl.tagStore.isReady}}</span><span>isEnabled:</span><span>{{$ctrl.tagStore.isEnabled}}</span>
     <ul class="tags">
-        <li ng-repeat="tag in $ctrl.tags">
+        <li ng-repeat="tag in $ctrl.tagStore.tags">
             <tag-detail id="tag.id" reader="tag.reader" isComplete="tag.isComplete" isCheckoutState="tag.isCheckoutState"></tag-detail>
         </li>
     </ul>

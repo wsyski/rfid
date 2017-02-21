@@ -99,7 +99,7 @@
                 function (e) {
                     console.error('error: %s', e);
                 },
-                noop()
+                noop
             );
         }
 
@@ -190,7 +190,7 @@
                         // errors and "unclean" closes land here
                         console.error('error: %s', e);
                     },
-                    noop()
+                    noop
                 );
             }
         }
