@@ -14,237 +14,236 @@ var CopyWebpackPlugin = require('copy-webpack-plugin');
 var ENV = process.env.npm_lifecycle_event;
 var isTest = ENV === 'test' || ENV === 'test-watch';
 var isProd = ENV === 'build';
-var indexFileName='index.html';
-var appFileName='app.js';
+var indexFileName = 'index.html';
+var appFileName = 'app.module.js';
 //var indexFileName='rfid-client.html';
 //var appFileName='rfid-client.js';
 
-console.log('ENV: '+ENV);
+console.log('ENV: ' + ENV);
 
 module.exports = function makeWebpackConfig() {
-  /**
-   * Config
-   * Reference: http://webpack.github.io/docs/configuration.html
-   * This is the object where all configuration gets set
-   */
-  var config = {};
+    /**
+     * Config
+     * Reference: http://webpack.github.io/docs/configuration.html
+     * This is the object where all configuration gets set
+     */
+    var config = {};
 
-  /**
-   * Entry
-   * Reference: http://webpack.github.io/docs/configuration.html#entry
-   * Should be an empty object if it's generating a test build
-   * Karma will set this when it's a test build
-   */
-  config.entry = isTest ? void 0 : {
-    app: './src/app/'+appFileName,
-    vendor: ['angular','angular-animate','angular-aria','angular-messages','angular-material','rx-lite','rx-dom','rx-store','object-assign']
-  };
+    /**
+     * Entry
+     * Reference: http://webpack.github.io/docs/configuration.html#entry
+     * Should be an empty object if it's generating a test build
+     * Karma will set this when it's a test build
+     */
+    config.entry = isTest ? void 0 : {
+            app: './src/app/' + appFileName,
+            vendor: ['angular','angular-animate', 'angular-aria', 'angular-messages','angular-material', 'angular-route','rx-lite', 'rx-dom', 'rx-store', 'object-assign']
+        };
 
-  /**
-   * Output
-   * Reference: http://webpack.github.io/docs/configuration.html#output
-   * Should be an empty object if it's generating a test build
-   * Karma will handle setting it up for you when it's a test build
-   */
-  config.output = isTest ? {} : {
-    // Absolute output directory
-    path: __dirname + '/dist',
+    /**
+     * Output
+     * Reference: http://webpack.github.io/docs/configuration.html#output
+     * Should be an empty object if it's generating a test build
+     * Karma will handle setting it up for you when it's a test build
+     */
+    config.output = isTest ? {} : {
+            // Absolute output directory
+            path: __dirname + '/dist',
 
-    // Output path from the view of the page
-    // Uses webpack-dev-server in development
-    publicPath: isProd ? '/' : 'http://localhost:8080/',
+            // Output path from the view of the page
+            // Uses webpack-dev-server in development
+            publicPath: isProd ? '/' : 'http://localhost:8080/',
 
-    // Filename for entry points
-    // Only adds hash in build mode
-    filename: isProd ? '[name].[hash].js' : '[name].bundle.js',
+            // Filename for entry points
+            // Only adds hash in build mode
+            filename: isProd ? '[name].[hash].js' : '[name].bundle.js',
 
-    // Filename for non-entry points
-    // Only adds hash in build mode
-    chunkFilename: isProd ? '[name].[hash].js' : '[name].bundle.js'
-  };
+            // Filename for non-entry points
+            // Only adds hash in build mode
+            chunkFilename: isProd ? '[name].[hash].js' : '[name].bundle.js'
+        };
 
-  /**
-   * Devtool
-   * Reference: http://webpack.github.io/docs/configuration.html#devtool
-   * Type of sourcemap to use per build type
-   */
-  if (isTest) {
-    config.devtool = 'inline-source-map';
-  }
-  else if (isProd) {
-    config.devtool = 'source-map';
-  }
-  else {
-    config.devtool = 'inline-source-map';
-    //config.devtool = 'eval-source-map';
-  }
+    /**
+     * Devtool
+     * Reference: http://webpack.github.io/docs/configuration.html#devtool
+     * Type of sourcemap to use per build type
+     */
+    if (isTest) {
+        config.devtool = 'inline-source-map';
+    }
+    else if (isProd) {
+        config.devtool = 'source-map';
+    }
+    else {
+        config.devtool = 'inline-source-map';
+        //config.devtool = 'eval-source-map';
+    }
 
-  /**
-   * Loaders
-   * Reference: http://webpack.github.io/docs/configuration.html#module-loaders
-   * List: http://webpack.github.io/docs/list-of-loaders.html
-   * This handles most of the magic responsible for converting modules
-   */
+    /**
+     * Loaders
+     * Reference: http://webpack.github.io/docs/configuration.html#module-loaders
+     * List: http://webpack.github.io/docs/list-of-loaders.html
+     * This handles most of the magic responsible for converting modules
+     */
 
-  // Initialize module
-  config.module = {
-    rules: [{
-      // JS LOADER
-      // Reference: https://github.com/babel/babel-loader
-      // Transpile .js files using babel-loader
-      // Compiles ES6 and ES7 into ES5 code
-      test: /\.js$/,
-      loader: 'babel-loader',
-      exclude: /node_modules/
-    }, {
-      // CSS LOADER
-      // Reference: https://github.com/webpack/css-loader
-      // Allow loading css through js
-      //
-      // Reference: https://github.com/postcss/postcss-loader
-      // Postprocess your css with PostCSS plugins
-      test: /\.css$/,
-      // Reference: https://github.com/webpack/extract-text-webpack-plugin
-      // Extract css files in production builds
-      //
-      // Reference: https://github.com/webpack/style-loader
-      // Use style-loader in development.
+    // Initialize module
+    config.module = {
+        rules: [{
+            // JS LOADER
+            // Reference: https://github.com/babel/babel-loader
+            // Transpile .js files using babel-loader
+            // Compiles ES6 and ES7 into ES5 code
+            test: /\.js$/,
+            loader: 'babel-loader',
+            exclude: /node_modules/
+        }, {
+            // CSS LOADER
+            // Reference: https://github.com/webpack/css-loader
+            // Allow loading css through js
+            //
+            // Reference: https://github.com/postcss/postcss-loader
+            // Postprocess your css with PostCSS plugins
+            test: /\.css$/,
+            // Reference: https://github.com/webpack/extract-text-webpack-plugin
+            // Extract css files in production builds
+            //
+            // Reference: https://github.com/webpack/style-loader
+            // Use style-loader in development.
 
-      loader: isTest ? 'null-loader' : ExtractTextPlugin.extract({
-        fallbackLoader: 'style-loader',
-        loader: [
-          {loader: 'css-loader', query: {sourceMap: true}},
-          {loader: 'postcss-loader'}
-        ],
-      })
-    }, {
-      // ASSET LOADER
-      // Reference: https://github.com/webpack/file-loader
-      // Copy png, jpg, jpeg, gif, svg, woff, woff2, ttf, eot files to output
-      // Rename the file using the asset hash
-      // Pass along the updated reference to your code
-      // You can add here any file extension you want to get copied to your output
-      test: /\.(png|jpg|jpeg|gif|svg|woff|woff2|ttf|eot)$/,
-      loader: 'file-loader'
-    }, {
-      // HTML LOADER
-      // Reference: https://github.com/webpack/raw-loader
-      // Allow loading html through js
-      test: /\.html$/,
-      loader: 'raw-loader'
-    }]
-  };
+            loader: isTest ? 'null-loader' : ExtractTextPlugin.extract({
+                    fallbackLoader: 'style-loader',
+                    loader: [
+                        {loader: 'css-loader', query: {sourceMap: true}},
+                        {loader: 'postcss-loader'}
+                    ],
+                })
+        }, {
+            // ASSET LOADER
+            // Reference: https://github.com/webpack/file-loader
+            // Copy png, jpg, jpeg, gif, svg, woff, woff2, ttf, eot files to output
+            // Rename the file using the asset hash
+            // Pass along the updated reference to your code
+            // You can add here any file extension you want to get copied to your output
+            test: /\.(png|jpg|jpeg|gif|svg|woff|woff2|ttf|eot)$/,
+            loader: 'file-loader'
+        }, {
+            // HTML LOADER
+            // Reference: https://github.com/webpack/raw-loader
+            // Allow loading html through js
+            test: /\.html$/,
+            loader: 'raw-loader'
+        }]
+    };
 
-  // ISTANBUL LOADER
-  // https://github.com/deepsweet/istanbul-instrumenter-loader
-  // Instrument JS files with istanbul-lib-instrument for subsequent code coverage reporting
-  // Skips node_modules and files that end with .test
-  if (isTest) {
-    config.module.rules.push({
-      enforce: 'pre',
-      test: /\.js$/,
-      exclude: [
-        /node_modules/,
-        /\.spec\.js$/
-      ],
-      loader: 'istanbul-instrumenter-loader',
-      query: {
-        esModules: true
-      }
-    })
-  }
+    // ISTANBUL LOADER
+    // https://github.com/deepsweet/istanbul-instrumenter-loader
+    // Instrument JS files with istanbul-lib-instrument for subsequent code coverage reporting
+    // Skips node_modules and files that end with .test
+    if (isTest) {
+        config.module.rules.push({
+            enforce: 'pre',
+            test: /\.js$/,
+            exclude: [
+                /node_modules/,
+                /\.spec\.js$/
+            ],
+            loader: 'istanbul-instrumenter-loader',
+            query: {
+                esModules: true
+            }
+        })
+    }
 
-  /**
-   * PostCSS
-   * Reference: https://github.com/postcss/autoprefixer-core
-   * Add vendor prefixes to your css
-   */
-   // NOTE: This is now handled in the `postcss.config.js`
-   //       webpack2 has some issues, making the config file necessary
+    /**
+     * PostCSS
+     * Reference: https://github.com/postcss/autoprefixer-core
+     * Add vendor prefixes to your css
+     */
+    // NOTE: This is now handled in the `postcss.config.js`
+    //       webpack2 has some issues, making the config file necessary
 
-  /**
-   * Plugins
-   * Reference: http://webpack.github.io/docs/configuration.html#plugins
-   * List: http://webpack.github.io/docs/list-of-plugins.html
-   */
-  config.plugins = [
-    new webpack.LoaderOptionsPlugin({
-      test: /\.scss$/i,
-      options: {
-        postcss: {
-          plugins: [autoprefixer]
-        }
-      }
-    })
-  ];
+    /**
+     * Plugins
+     * Reference: http://webpack.github.io/docs/configuration.html#plugins
+     * List: http://webpack.github.io/docs/list-of-plugins.html
+     */
+    config.plugins = [
+        new webpack.LoaderOptionsPlugin({
+            test: /\.scss$/i,
+            options: {
+                postcss: {
+                    plugins: [autoprefixer]
+                }
+            }
+        }),
+        new webpack.optimize.CommonsChunkPlugin({name: 'vendor', filename: isProd ? 'vendor.[hash].js' : 'vendor.js'})
+    ];
 
-  // Skip rendering index.html in test mode
-  if (!isTest) {
-    // Reference: https://github.com/ampedandwired/html-webpack-plugin
-    // Render index.html
-    config.plugins.push(
-      new HtmlWebpackPlugin({
-        filename: indexFileName,
-        template: './src/public/'+indexFileName,
-        inject: 'head'
-      }),
+    // Skip rendering index.html in test mode
+    if (!isTest) {
+        // Reference: https://github.com/ampedandwired/html-webpack-plugin
+        // Render index.html
+        config.plugins.push(
+            new HtmlWebpackPlugin({
+                filename: indexFileName,
+                template: './src/public/' + indexFileName,
+                inject: 'head'
+            }),
 
-      // Reference: https://github.com/webpack/extract-text-webpack-plugin
-      // Extract css files
-      // Disabled when in test mode or not in build mode
-      new ExtractTextPlugin({filename: 'css/[name].[hash].css', disable: isTest, allChunks: true})
-    )
-  }
+            // Reference: https://github.com/webpack/extract-text-webpack-plugin
+            // Extract css files
+            // Disabled when in test mode or not in build mode
+            new ExtractTextPlugin({filename: isProd ? 'css/[name].[hash].css' : 'css/[name].css', disable: isTest, allChunks: true})
+        )
+    }
 
-  // Add build specific plugins
-  if (isProd) {
-    config.plugins.push(
-      // Reference: http://webpack.github.io/docs/list-of-plugins.html#noerrorsplugin
-      // Only emit files when there are no errors
-      new webpack.NoEmitOnErrorsPlugin(),
+    // Add build specific plugins
+    if (isProd) {
+        config.plugins.push(
+            // Reference: http://webpack.github.io/docs/list-of-plugins.html#noerrorsplugin
+            // Only emit files when there are no errors
+            new webpack.NoEmitOnErrorsPlugin(),
 
-      new webpack.optimize.CommonsChunkPlugin({ name: 'vendor', filename: 'vendor.[hash].js' }),
+            // Reference: http://webpack.github.io/docs/list-of-plugins.html#uglifyjsplugin
+            // Minify all javascript, switch loaders to minimizing mode
+            new webpack.optimize.UglifyJsPlugin({
+                debug: true,
+                minimize: false,
+                compress: false,
+                beautify: true,
+                mangle: false,
+                sourceMap: true,
+                comments: true
+            }),
 
-      // Reference: http://webpack.github.io/docs/list-of-plugins.html#uglifyjsplugin
-      // Minify all javascript, switch loaders to minimizing mode
-      new webpack.optimize.UglifyJsPlugin({
-          debug: true,
-          minimize: false,
-          compress: false,
-          beautify: true,
-          mangle: false,
-          sourceMap: true,
-          comments: true
-      }),
+            // Copy assets from the public folder
+            // Reference: https://github.com/kevlened/copy-webpack-plugin
+            new CopyWebpackPlugin([{
+                from: __dirname + '/src/public'
+            }])
+        );
+        // Reference: http://webpack.github.io/docs/configuration.html#externals
+        // Specify dependencies that shouldn’t be resolved by webpack
+        /*
+         config.externals = {
+         angular: 'angular',
+         ngRoute: 'angular-route',
+         uiRouter: 'angular-ui-router',
+         ngAnimate: 'angular-animate',
+         ngResource: 'angular-resource'
+         }
+         */
+    }
 
-      // Copy assets from the public folder
-      // Reference: https://github.com/kevlened/copy-webpack-plugin
-      new CopyWebpackPlugin([{
-        from: __dirname + '/src/public'
-      }])
-    );
-    // Reference: http://webpack.github.io/docs/configuration.html#externals
-    // Specify dependencies that shouldn’t be resolved by webpack
-    /*
-    config.externals = {
-          angular: 'angular',
-          ngRoute: 'angular-route',
-          uiRouter: 'angular-ui-router',
-          ngAnimate: 'angular-animate',
-          ngResource: 'angular-resource'
-      }
-      */
-  }
+    /**
+     * Dev server configuration
+     * Reference: http://webpack.github.io/docs/configuration.html#devserver
+     * Reference: http://webpack.github.io/docs/webpack-dev-server.html
+     */
+    config.devServer = {
+        contentBase: './src/public',
+        stats: 'minimal'
+    };
 
-  /**
-   * Dev server configuration
-   * Reference: http://webpack.github.io/docs/configuration.html#devserver
-   * Reference: http://webpack.github.io/docs/webpack-dev-server.html
-   */
-  config.devServer = {
-    contentBase: './src/public',
-    stats: 'minimal'
-  };
-
-  return config;
+    return config;
 }();

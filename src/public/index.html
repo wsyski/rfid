@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" ng-app="app">
 <head>
     <meta charset="utf-8">
     <meta name="description" content="RFID Client Example">
@@ -8,33 +8,6 @@
 </head>
 
 <body>
-<div ng-app="myApp" ng-controller="mainCtrl">
-    <script type="text/ng-template" id="/boxa">
-        BoxA - Message Listener: </br>
-        <strong>{{boxA.msg}}</strong></br>
-        <md-button ng-click='boxA.unsubscribe()' class='md-warn'>Unsubscribe A</md-button>
-    </script>
-    <script type="text/ng-template" id="/boxb">
-        BoxB - Message Listener: </br>
-        <strong>{{boxB.msg}}</strong></br>
-        <md-button ng-click='boxB.unsubscribe()' class='md-warn'>Unsubscribe B</md-button>
-    </script>
-
-    <md-content class='md-padding'>
-        <h3>
-            {{name}}
-        </h3>
-        <label>Enter Text To Broadcast</label>
-        <input ng-model='msg'/></br>
-        <md-button class='md-primary' ng-click='broadcastFn()'>Broadcast</md-button>
-        </br>
-        <h4>
-            Components
-        </h4>
-        <box-a></box-a>
-        </br>
-        <box-b></box-b>
-    </md-content>
-</div>
+<div ng-view class="view-frame"></div>
 </body>
 </html>

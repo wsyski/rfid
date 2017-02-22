@@ -1,7 +1,7 @@
 'use strict';
 
+var AxRfidClient = require('./ax-rfid-client');
 var angular = require('angular');
-var AxRfidClient = require('../ax-rfid-client');
 
 angular.module('rfid').factory('rfidClientService', ['$window', function($window){
     var host = 'lulpreserv3';
@@ -18,6 +18,9 @@ angular.module('rfid').factory('rfidClientService', ['$window', function($window
     );
     var tagStore = axRfidClient.getTagStore();
     return{
+        reload:function(){
+            axRfidClient.reload();
+        },
         connect:function(){
             axRfidClient.connect();
         },

@@ -4,12 +4,11 @@ require('../style/app.css');
 require('../../node_modules/angular-material/angular-material.css');
 
 var angular = require('angular'),
-    ngAnimate = require('angular-animate'),
-    ngAria = require('angular-aria'),
-    ngMessages = require('angular-messages'),
-    ngMaterial = require('angular-material');
+    ngMaterial = require('angular-material'),
+    ngRoute = require('angular-route'),
+    rfid = require('./rfid.module');
 
-angular.module('main', ['ngMaterial']);
+angular.module('app', ['ngMaterial','ngRoute','rfid']);
 
-require('./app.controller');
+require('./app.config');
 
