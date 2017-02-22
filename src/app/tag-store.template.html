@@ -1,13 +1,18 @@
-<md-button class='md-primary' ng-click='$ctrl.connect()'>Connect</md-button>
-<md-button ng-click='$ctrl.disconnect()'>Disconnect</md-button>
-<md-button ng-click='$ctrl.reload()'>Reload</md-button>
+<md-button class='md-primary' ng-click='$ctrl.connect()' ng-disabled="$ctrl.tagStore.isConnected">Connect</md-button>
+<md-button ng-click='$ctrl.disconnect()' ng-disabled="!$ctrl.tagStore.isConnected">Disconnect</md-button>
+<md-button ng-click='$ctrl.reload()' ng-disabled="!$ctrl.tagStore.isConnected">Reload</md-button>
+<md-button ng-click='$ctrl.setCheckoutState(true)' ng-disabled="!$ctrl.tagStore.isConnected">Checkout</md-button>
+<md-button ng-click='$ctrl.setCheckoutState(false)' ng-disabled="!$ctrl.tagStore.isConnected">Checkin</md-button>
 <md-content class='md-padding'>
 <div class="tag-store">
-  <span>isConnected:</span><span>{{$ctrl.tagStore.isConnected}}</span><span>isReady:</span><span>{{$ctrl.tagStore.isReady}}</span><span>isEnabled:</span><span>{{$ctrl.tagStore.isEnabled}}</span>
-    <ul class="tags">
-        <li ng-repeat="tag in $ctrl.tagStore.tags">
+  <i class="material-icons" ng-bind="$ctrl.tagStore.isConnected ? 'sync' : 'sync_disabled'"></i>
+    <i class="material-icons" ng-bind="$ctrl.tagStore.isEnabled ? 'notifications' : 'notifications_none'"></i>
+    <i class="material-icons" ng-bind="$ctrl.tagStore.isReady ? 'check_circle' : 'error'"></i>
+
+    <div>
+        <div ng-repeat="tag in $ctrl.tagStore.tags">
             <tag-detail id="tag.id" reader="tag.reader" complete="tag.isComplete" checkoutstate="tag.isCheckoutState"></tag-detail>
-        </li>
-    </ul>
+        </div>
+    </div>
 </div>
 </md-content>

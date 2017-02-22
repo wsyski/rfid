@@ -1,3 +1,9 @@
 <div class="tag-detail">
-  <span>id:</span><span>{{$ctrl.id}}</span><span>reader:</span><span>{{$ctrl.reader}}</span><span>isComplete:</span><span>{{$ctrl.isComplete}}</span><span>isCheckoutState:</span><span>{{$ctrl.isCheckoutState}}</span>
+    <table class="mdl-data-table mdl-js-data-table mdl-data-table--selectable mdl-shadow--2dp">
+        <tr>
+            <td><i class="material-icons" ng-hide="$ctrl.isComplete">more_horiz</i></td>
+            <td><i class="material-icons" ng-show="$ctrl.isCheckoutState!==undefined" ng-bind="$ctrl.isCheckoutState ? 'alarm_off' :'alarm_on'"></i></td>
+            <td>{{$ctrl.id}}</td>
+        </tr>
+    </table>
 </div>

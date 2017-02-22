@@ -8,9 +8,9 @@ config(['$locationProvider' ,'$routeProvider',
         //$locationProvider.hashPrefix('!');
 
         $routeProvider.
-        when('/tags', {
+        when('/', {
             template: '<tag-store></tag-store>'
         }).
-        otherwise('/tags');
+        otherwise('/');
     }
 ]);
