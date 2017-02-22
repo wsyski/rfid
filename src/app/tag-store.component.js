@@ -11,7 +11,9 @@ angular.module('rfid').component('tagStore', {
             // $scope.$watch(self.tagStore);
             self.subscribtion = self.rfidClientService.subscribe(function (data) {
                 console.log('Subscribe');
-                self.tagStore = data;
+                $scope.$evalAsync(function() {
+                    self.tagStore = data;
+                });
             });
         };
         self.rfidClientService = rfidClientService;
