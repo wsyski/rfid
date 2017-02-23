@@ -7,8 +7,8 @@ describe('AxRfid', function () {
             axRfidTagStore = new AxRfid.TagStore();
         });
 
-        it('should contain the starter url', function () {
-            expect('1').toBe('1');
+        it('has the subscribe function', function () {
+            expect(typeof axRfidTagStore.subscribe).toBe('function');
         });
     });
 });
