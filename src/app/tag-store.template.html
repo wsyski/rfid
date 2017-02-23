@@ -4,15 +4,16 @@
 <md-button ng-click='$ctrl.setCheckoutState(true)' ng-disabled="!$ctrl.tagStore.isConnected">Checkout</md-button>
 <md-button ng-click='$ctrl.setCheckoutState(false)' ng-disabled="!$ctrl.tagStore.isConnected">Checkin</md-button>
 <md-content class='md-padding'>
-<div class="tag-store">
-  <i class="material-icons" ng-bind="$ctrl.tagStore.isConnected ? 'sync' : 'sync_disabled'"></i>
-    <i class="material-icons" ng-bind="$ctrl.tagStore.isEnabled ? 'notifications' : 'notifications_none'"></i>
-    <i class="material-icons" ng-bind="$ctrl.tagStore.isReady ? 'check_circle' : 'error'"></i>
-
-    <div>
-        <div ng-repeat="tag in $ctrl.tagStore.tags">
-            <tag-detail id="tag.id" reader="tag.reader" complete="tag.isComplete" checkoutstate="tag.isCheckoutState"></tag-detail>
-        </div>
+    <div class="tag-store">
+        <i class="material-icons" ng-bind="$ctrl.tagStore.isConnected ? 'sync' : 'sync_disabled'"></i>
+        <i class="material-icons" ng-bind="$ctrl.tagStore.isEnabled ? 'notifications' : 'notifications_none'"></i>
+        <i class="material-icons" ng-bind="$ctrl.tagStore.isReady ? 'check_circle' : 'error'"></i>
+        <table class="mdl-data-table">
+            <tr ng-repeat="tag in $ctrl.tagStore.tags">
+                <td>
+                    <tag-detail id="tag.id" reader="tag.reader" complete="tag.isComplete" checkoutstate="tag.isCheckoutState"></tag-detail>
+                </td>
+            </tr>
+        </table>
     </div>
-</div>
 </md-content>

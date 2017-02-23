@@ -16,7 +16,7 @@
 
     RfidError.prototype = Object.create(Error.prototype);
     RfidError.prototype.constructor = RfidError;
-    var defaultConfig={host: "localhost", port: 7000, readerProbeInterval: 30000, name: "rfidClient",isDebug: false};
+    var defaultConfig={host: "localhost", port: 7000, readerProbeInterval: 15000, name: "rfidClient",isDebug: false};
 
     function Client(overrideConfig) {
         var config = assign({}, defaultConfig, overrideConfig);

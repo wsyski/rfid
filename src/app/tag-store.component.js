@@ -8,12 +8,17 @@ angular.module('rfid').component('tagStore', {
         var self = this;
         self.tagStore = {};
         self.$onInit = function () {
+            console.log('Subscribe');
             self.subscribtion = self.rfidClientService.subscribe(function (data) {
-                console.log('Subscribe');
+                console.log('tagStore: '+JSON.stringify(data));
                 $scope.$evalAsync(function () {
                     self.tagStore = data;
                 });
             });
+        };
+        self.$onDestroy = function() {
+            console.log('Unsubscribe');
+            self.rfidClientService.usubscribe(self.subscription);
         };
         self.rfidClientService = rfidClientService;
         self.connect = self.rfidClientService.connect;
@@ -26,10 +31,6 @@ angular.module('rfid').component('tagStore', {
                     self.rfidClientService.setCheckoutState(tag.id, isCheckoutState);
                 }
             });
-        };
-        self.unsubscribe = function () {
-            console.log('Unsubscribe');
-            self.rfidClientService.usubscribe(self.subscription);
         };
     },
     template: require('./tag-store.template.html')
