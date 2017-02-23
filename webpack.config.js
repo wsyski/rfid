@@ -16,8 +16,6 @@ var isTest = ENV === 'test' || ENV === 'test-watch';
 var isProd = ENV === 'build';
 var indexFileName = 'index.html';
 var appFileName = 'app.module.js';
-//var indexFileName='rfid-client.html';
-//var appFileName='rfid-client.js';
 
 console.log('ENV: ' + ENV);
 
