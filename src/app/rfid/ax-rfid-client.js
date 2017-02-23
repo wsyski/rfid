@@ -6,9 +6,9 @@
         AxRfidTagStore = AxRfid.TagStore;
     }
     else {
-        AxRfidTagStore = require('./ax-rfid-store');
         require('rx-lite');
         require('rx-dom');
+        AxRfidTagStore = require('./ax-rfid-store');
     }
 
     function RfidError(message, cmd) {

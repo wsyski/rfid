@@ -6,6 +6,8 @@
         createRxStore = RxStore.createRxStore;
     }
     else {
+        require('rx-lite');
+        require('rx-dom');
         createRxStore = require('rx-store').createRxStore;
     }
 

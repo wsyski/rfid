@@ -1,20 +1,14 @@
-import app from './app';
+describe('AxRfid', function () {
 
-describe('app', () => {
+    describe('AxRfid.TagStore', function () {
+        var axRfidTagStore;
 
-  describe('AppCtrl', () => {
-    let ctrl;
+        beforeEach(function () {
+            axRfidTagStore = new AxRfid.TagStore();
+        });
 
-    beforeEach(() => {
-      angular.mock.module(app);
-
-      angular.mock.inject(($controller) => {
-        ctrl = $controller('AppCtrl', {});
-      });
+        it('should contain the starter url', function () {
+            expect('1').toBe('1');
+        });
     });
-
-    it('should contain the starter url', () => {
-      expect(ctrl.url).toBe('https://github.com/preboot/angular-webpack');
-    });
-  });
 });

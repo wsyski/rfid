@@ -174,8 +174,7 @@ module.exports = function makeWebpackConfig() {
                 }
             }
         }),
-        new webpack.optimize.CommonsChunkPlugin({name: 'vendor', filename: isProd ? 'vendor.[hash].js' : 'vendor.js'})
-    ];
+     ];
 
     // Skip rendering index.html in test mode
     if (!isTest) {
@@ -192,7 +191,10 @@ module.exports = function makeWebpackConfig() {
             // Extract css files
             // Disabled when in test mode or not in build mode
             new ExtractTextPlugin({filename: isProd ? 'css/[name].[hash].css' : 'css/[name].css', disable: isTest, allChunks: true})
-        )
+        );
+        config.plugins.push(
+          new webpack.optimize.CommonsChunkPlugin({name: 'vendor', filename: isProd ? 'vendor.[hash].js' : 'vendor.js'}));
+
     }
 
     // Add build specific plugins
