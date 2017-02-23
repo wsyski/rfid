@@ -176,7 +176,13 @@
                                 handleMessage(message);
                                 break;
                             case "readerStatus":
-                                tagStore.setReady(message.status==="online");
+                                if (message.status==="online") {
+                                    tagStore.setReady(true);
+                                }
+                                else {
+                                    tagStore.setReady(false);
+                                    tagStore.setEnabled(false);
+                                }
                                 handleMessage(message);
                                 break;
                             case "resend":

@@ -1,8 +1,8 @@
 <md-button class='md-primary' ng-click='$ctrl.connect()' ng-disabled="$ctrl.tagStore.isConnected">Connect</md-button>
 <md-button ng-click='$ctrl.disconnect()' ng-disabled="!$ctrl.tagStore.isConnected">Disconnect</md-button>
-<md-button ng-click='$ctrl.reload()' ng-disabled="!$ctrl.tagStore.isConnected">Reload</md-button>
-<md-button ng-click='$ctrl.setCheckoutState(true)' ng-disabled="!$ctrl.tagStore.isConnected">Checkout</md-button>
-<md-button ng-click='$ctrl.setCheckoutState(false)' ng-disabled="!$ctrl.tagStore.isConnected">Checkin</md-button>
+<md-button ng-click='$ctrl.reload()' ng-disabled="!$ctrl.tagStore.isReady">Reload</md-button>
+<md-button ng-click='$ctrl.setCheckoutState(true)' ng-disabled="!$ctrl.tagStore.isEnabled">Checkout</md-button>
+<md-button ng-click='$ctrl.setCheckoutState(false)' ng-disabled="!$ctrl.tagStore.isEnabled">Checkin</md-button>
 <md-content class='md-padding'>
     <div class="tag-store">
         <i class="material-icons" ng-bind="$ctrl.tagStore.isConnected ? 'sync' : 'sync_disabled'"></i>

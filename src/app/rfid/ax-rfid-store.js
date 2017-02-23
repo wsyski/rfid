@@ -34,8 +34,6 @@
                 return Object.assign({}, state, {tags: removeTag(state.tags, payload.id).concat(new Tag(payload.id, payload.reader, payload.isComplete))});
             case 'REMOVE_TAG':
                 return Object.assign({}, state, {tags: removeTag(state.tags, payload.id)});
-            case 'REMOVE_ALL_TAGS':
-                return Object.assign({}, state, {tags: []});
             case 'SET_ENABLED':
                 return Object.assign({}, state, {isEnabled: payload.isEnabled});
             case 'SET_READY':
@@ -71,12 +69,6 @@
             return {
                 type: 'REMOVE_TAG',
                 payload: {id: id}
-            };
-        }
-
-        function removeAllTags() {
-            return {
-                type: 'REMOVE_ALL_TAGS'
             };
         }
 
