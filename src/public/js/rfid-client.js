@@ -1,7 +1,5 @@
 'use strict';
 
-require('../style/rfid-client.css');
-var AxRfidClient = require('./ax-rfid-client');
 
 function $(id) {
     return document.getElementById(id);
@@ -51,7 +49,7 @@ window.addEventListener("load", function (event) {
     var btnCheckin = $("btnCheckin");
     var inputMessage = $("inputMessage");
     var tagStoreData;
-    var axRfidClient = new AxRfidClient({host: host, port: port, name: navigator.userAgent, isDebug: true});
+    var axRfidClient = new AxRfid.Client({host: host, port: port, name: navigator.userAgent, isDebug: true});
     debugSubscription = axRfidClient.getDebugSubject().subscribe(
         function (message) {
             showDebugMessage(message);

@@ -37,7 +37,7 @@ module.exports = function makeWebpackConfig() {
      */
     config.entry = isTest ? void 0 : {
             app: './src/app/' + appFileName,
-            vendor: ['angular','angular-animate', 'angular-aria', 'angular-messages','angular-material', 'angular-route','rx-lite', 'rx-dom', 'rx-store', 'object-assign']
+            vendor: ['angular','angular-animate', 'angular-aria', 'angular-messages','angular-material', 'angular-route','rx-lite', 'rx-dom', 'rx-store']
         };
 
     /**
