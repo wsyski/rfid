@@ -15,7 +15,7 @@ var ENV = process.env.npm_lifecycle_event;
 var isTest = ENV === 'test' || ENV === 'test-watch';
 var isProd = ENV === 'build';
 var indexFileName = 'index.html';
-var appFileName = 'app.module.js';
+var appFileName = 'bootstrap.js';
 
 console.log('ENV: ' + ENV);
 

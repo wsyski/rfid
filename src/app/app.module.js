@@ -8,7 +8,7 @@ var angular = require('angular'),
     ngRoute = require('angular-route'),
     rfid = require('./rfid/rfid.module');
 
-angular.module('app', ['ngMaterial','ngRoute','rfid']);
+module.exports = angular.module('app', ['ngMaterial','ngRoute','rfid']);
 
 require('./app.config');
 

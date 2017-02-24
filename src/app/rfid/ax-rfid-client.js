@@ -22,7 +22,7 @@
 
     RfidError.prototype = Object.create(Error.prototype);
     RfidError.prototype.constructor = RfidError;
-    var defaultConfig={host: "localhost", port: 7000, readerProbeInterval: 15000, name: "rfidClient",isDebug: false};
+    var defaultConfig={host: "localhost", port: 7000, readerProbeInterval: 15000, isDebug: false};
 
     function Client(overrideConfig) {
         var config = Object.assign({}, defaultConfig, overrideConfig);
@@ -88,8 +88,8 @@
             );
         }
 
-        function setClientName() {
-            sendMessageWithCallback({"cmd": "remoteName", "name": config.name}, noop);
+        function setClientName(name) {
+            sendMessageWithCallback({"cmd": "remoteName", "name": name}, noop);
         }
 
         function readerStatus() {
@@ -119,7 +119,7 @@
         }
 
 
-        function connect() {
+        function connect(name) {
             if (ws) {
                 console.error("Already connected");
             }
@@ -129,7 +129,7 @@
                     console.log('Connected');
                     tagStore.setConnected(true);
                     queue = [];
-                    setClientName();
+                    setClientName(name);
                     probeReaderSubscription=probeReaderStatus();
                 }.bind(this));
 
@@ -217,8 +217,8 @@
         }
 
         return {
-            connect: function () {
-                connect()
+            connect: function (name) {
+                connect(name)
             },
             disconnect: function () {
                 disconnect()

@@ -49,7 +49,7 @@ window.addEventListener("load", function (event) {
     var btnCheckin = $("btnCheckin");
     var inputMessage = $("inputMessage");
     var tagStoreData;
-    var axRfidClient = new AxRfid.Client({host: host, port: port, name: navigator.userAgent, isDebug: true});
+    var axRfidClient = new AxRfid.Client({host: host, port: port, isDebug: true});
     debugSubscription = axRfidClient.getDebugSubject().subscribe(
         function (message) {
             showDebugMessage(message);
@@ -129,7 +129,7 @@ window.addEventListener("load", function (event) {
 
     });
     btnConnect.addEventListener("click", function (event) {
-        axRfidClient.connect();
+        axRfidClient.connect(navigator.userAgent);
     });
 
     btnDisconnect.addEventListener("click", function (event) {

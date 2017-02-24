@@ -3,19 +3,19 @@
 var AxRfidClient = require('./ax-rfid-client');
 var angular = require('angular');
 
-angular.module('rfid').factory('rfidClientService', ['$window', function ($window) {
-    var host = 'lulpreserv3';
-    var port = 7000;
-    var axRfidClient = new AxRfidClient({host: host, port: port, name: $window.navigator.userAgent, isDebug: true});
-    var debugSubscription = axRfidClient.getDebugSubject().subscribe(
-        function (message) {
-            console.log("message: %s", JSON.stringify(message))
-        },
-        function (e) {
-            console.error("error: %s", e);
-        },
-        angular.noop
-    );
+angular.module('rfid').factory('rfidClientService', ['RFID_CONFIG', function (RFID_CONFIG) {
+    var axRfidClient = new AxRfidClient({host: RFID_CONFIG.HOST, port: RFID_CONFIG.PORT, isDebug: RFID_CONFIG.DEBUG});
+    if (RFID_CONFIG.DEBUG) {
+        var debugSubscription = axRfidClient.getDebugSubject().subscribe(
+            function (message) {
+                console.log("message: %s", JSON.stringify(message))
+            },
+            function (e) {
+                console.error("error: %s", e);
+            },
+            angular.noop
+        );
+    }
     var tagStore = axRfidClient.getTagStore();
     return {
         reload: function () {
@@ -36,8 +36,8 @@ angular.module('rfid').factory('rfidClientService', ['$window', function ($windo
             );
         },
 
-        connect: function () {
-            axRfidClient.connect();
+        connect: function (name) {
+            axRfidClient.connect(name);
         },
         disconnect: function () {
             axRfidClient.disconnect();

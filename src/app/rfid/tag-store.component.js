@@ -3,8 +3,9 @@
 var angular = require('angular');
 
 angular.module('rfid').component('tagStore', {
-    bindings: {},
-    controller: function (rfidClientService, $scope) {
+    bindings: {
+    },
+    controller: function (rfidClientService, $scope, $window) {
         var self = this;
         self.tagStore = {};
         self.$onInit = function () {
@@ -21,7 +22,9 @@ angular.module('rfid').component('tagStore', {
             self.rfidClientService.usubscribe(self.subscription);
         };
         self.rfidClientService = rfidClientService;
-        self.connect = self.rfidClientService.connect;
+        self.connect = function() {
+            self.rfidClientService.connect($window.navigator.userAgent);
+        };
         self.disconnect = self.rfidClientService.disconnect;
         self.reload = self.rfidClientService.reload;
         self.setCheckoutState = function (isCheckoutState) {
