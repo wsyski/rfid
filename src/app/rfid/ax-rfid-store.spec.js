@@ -16,11 +16,14 @@ describe('AxRfid', function () {
         it('setConnected', function () {
             axRfidTagStore.setConnected(true);
             var subscription = axRfidTagStore.subscribe(function (data) {
-                var actualState = data;
-                var expectedState = Object.assign({}, AxRfid.INITIAL_STATE, {isConnected: true, isReady: true});
-                expect(actualState).toEqual(expectedState);
-            });
-            subscription.unsubscribe();
+                    var actualState = data;
+                    var expectedState = Object.assign({}, AxRfid.INITIAL_STATE, {isConnected: true, isReady: true});
+                    expect(actualState).toEqual(expectedState);
+                },
+                null,
+                function () {
+                    subscription.unsubscribe();
+                });
         });
 
         it('addOrReplaceTag', function () {
@@ -48,6 +51,38 @@ describe('AxRfid', function () {
 
                         });
                     subscription0.unsubscribe();
+                });
+        });
+
+        it('removeTag', function () {
+            axRfidTagStore.setConnected(true);
+            axRfidTagStore.addOrReplaceTag(TAG_ID, READER, true);
+            axRfidTagStore.removeTag(TAG_ID);
+            var expectedState = Object.assign({}, AxRfid.INITIAL_STATE, {isConnected: true, isReady: true});
+            var subscription = axRfidTagStore.subscribe(function (data) {
+                    expect(data).toEqual(expectedState);
+                },
+                null,
+                function () {
+                    subscription.unsubscribe();
+                });
+        });
+
+        it('setCheckoutState', function () {
+            axRfidTagStore.setConnected(true);
+            axRfidTagStore.addOrReplaceTag(TAG_ID, READER, true);
+            axRfidTagStore.setCheckoutState(TAG_ID, true);
+            var tag= new AxRfid.Tag(TAG_ID, READER, true);
+            tag.setCheckoutState(true);
+            var expectedState = Object.assign({},
+                AxRfid.INITIAL_STATE,
+                {isConnected: true, isReady: true, tags: [tag]});
+            var subscription = axRfidTagStore.subscribe(function (data) {
+                    expect(data).toEqual(expectedState);
+                },
+                null,
+                function () {
+                    subscription.unsubscribe();
                 });
         });
     });

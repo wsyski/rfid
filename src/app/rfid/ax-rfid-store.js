@@ -19,6 +19,10 @@
         this.isComplete = isComplete;
     }
 
+    Tag.prototype.setCheckoutState = function (isCheckoutState) {
+        this.isCheckoutState = isCheckoutState;
+    }
+
     function tagStoreReducer(state, action) {
 
         function removeTag(tags, id) {
@@ -43,12 +47,12 @@
             case 'SET_CHECKOUT_STATE':
                 return Object.assign({}, state, {
                     tags: state.tags.map(function (tag) {
-                        var newTag=new Tag(tag.id, tag.reader, tag.isComplete);
+                        var newTag = new Tag(tag.id, tag.reader, tag.isComplete);
                         if (tag.id === payload.id) {
-                            newTag.isCheckoutState=payload.isCheckoutState;
+                            newTag.setCheckoutState(payload.isCheckoutState);
                         }
                         else {
-                            newTag.isCheckoutState=tag.isCheckoutState;
+                            newTag.setCheckoutState(tag.isCheckoutState);
                         }
                         return newTag;
                     })
