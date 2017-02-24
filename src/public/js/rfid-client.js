@@ -91,7 +91,6 @@ window.addEventListener("load", function (event) {
                     function (message) {
                     },
                     function (e) {
-                        subscription.dispose();
                         onError(e);
                     },
                     function () {
@@ -119,7 +118,6 @@ window.addEventListener("load", function (event) {
             function (message) {
             },
             function (e) {
-                subscription.dispose();
                 onError(e);
             },
             function () {

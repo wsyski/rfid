@@ -8,7 +8,7 @@
     else {
         require('rx-lite');
         require('rx-dom');
-        AxRfidTagStore = require('./ax-rfid-store');
+        AxRfidTagStore = require('./ax-rfid-store').TagStore;
     }
 
     function RfidError(message, cmd) {
@@ -22,10 +22,11 @@
 
     RfidError.prototype = Object.create(Error.prototype);
     RfidError.prototype.constructor = RfidError;
-    var defaultConfig={host: "localhost", port: 7000, readerProbeInterval: 15000, isDebug: false};
+
+    var CONFIG={host: "localhost", port: 7000, readerProbeInterval: 15000, isDebug: false};
 
     function Client(overrideConfig) {
-        var config = Object.assign({}, defaultConfig, overrideConfig);
+        var config = Object.assign({}, CONFIG, overrideConfig);
         var debugSubject = new Rx.Subject();
         var tagStore = new AxRfidTagStore();
         var queue = [];

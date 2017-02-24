@@ -27,7 +27,6 @@ angular.module('rfid').factory('rfidClientService', ['RFID_CONFIG', function (RF
                 function (message) {
                 },
                 function (e) {
-                    subscription.dispose();
                     onError(e);
                 },
                 function () {
@@ -44,9 +43,6 @@ angular.module('rfid').factory('rfidClientService', ['RFID_CONFIG', function (RF
         },
         subscribe: function (subscription) {
             return tagStore.subscribe(subscription);
-        },
-        unsubscribe: function (subscription) {
-            subscription.unsubscribe();
         }
     }
 }]);

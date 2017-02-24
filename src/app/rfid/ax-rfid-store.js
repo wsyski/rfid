@@ -11,7 +11,7 @@
         createRxStore = require('rx-store').createRxStore;
     }
 
-    var initialState = {isConnected: false, isReady: false, isEnabled: false, tags: []};
+    var INITIAL_STATE = {isConnected: false, isReady: false, isEnabled: false, tags: []};
 
     function Tag(id, reader, isComplete) {
         this.id = id;
@@ -31,7 +31,7 @@
 
         switch (action.type) {
             case 'SET_CONNECTED':
-                return Object.assign({}, initialState, {isConnected: payload.isConnected, isReady: payload.isConnected});
+                return Object.assign({}, INITIAL_STATE, {isConnected: payload.isConnected, isReady: payload.isConnected});
             case 'ADD_OR_REPLACE_TAG':
                 return Object.assign({}, state, {tags: removeTag(state.tags, payload.id).concat(new Tag(payload.id, payload.reader, payload.isComplete))});
             case 'REMOVE_TAG':
@@ -102,7 +102,7 @@
             };
         }
 
-        var store = createRxStore(tagStoreReducer, initialState);
+        var store = createRxStore(tagStoreReducer, INITIAL_STATE);
 
         return {
             addOrReplaceTag: function (id, reader, isComplete) {
@@ -139,10 +139,16 @@
         }
     }
 
+    exports.Tag = Tag;
     exports.TagStore = TagStore;
+    exports.INITIAL_STATE = INITIAL_STATE;
 
 }((window.AxRfid = window.AxRfid || {})));
 
 if (typeof module !== "undefined") {
-    module.exports = AxRfid.TagStore;
+    module.exports = {
+        Tag: AxRfid.Tag,
+        TagStore: AxRfid.TagStore,
+        INITIAL_STATE: AxRfid.INITIAL_STATE
+    }
 }

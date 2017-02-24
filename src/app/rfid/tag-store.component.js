@@ -10,7 +10,7 @@ angular.module('rfid').component('tagStore', {
         self.tagStore = {};
         self.$onInit = function () {
             console.log('Subscribe');
-            self.subscribtion = self.rfidClientService.subscribe(function (data) {
+            self.subscription = self.rfidClientService.subscribe(function (data) {
                 console.log('tagStore: '+JSON.stringify(data));
                 $scope.$evalAsync(function () {
                     self.tagStore = data;
@@ -18,8 +18,11 @@ angular.module('rfid').component('tagStore', {
             });
         };
         self.$onDestroy = function() {
+            if (self.tagStore) {
+                self.rfidClientService.disconnect();
+            }
             console.log('Unsubscribe');
-            self.rfidClientService.usubscribe(self.subscription);
+            self.subscription.unsubscribe();
         };
         self.rfidClientService = rfidClientService;
         self.connect = function() {
