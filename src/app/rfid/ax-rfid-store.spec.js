@@ -1,4 +1,4 @@
-describe('AxRfid', function () {
+describe('RFID Store', function () {
     var TAG_ID = 'tagId';
     var READER = '1';
 
@@ -9,7 +9,7 @@ describe('AxRfid', function () {
             axRfidTagStore = new AxRfid.TagStore();
         });
 
-        it('has the subscribe function', function () {
+        it('verify api', function () {
             expect(typeof axRfidTagStore.subscribe).toBe('function');
         });
 
