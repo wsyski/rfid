@@ -42,8 +42,7 @@ angular.module('rfid').component('tagStore', {
         function setCheckoutState(id,isCheckoutState) {
             var result = self.rfidClientService.setCheckoutState(id, isCheckoutState);
             var subscription = result.subscribe(
-                function (message) {
-                },
+                angular.noop,
                 function (e) {
                     onError(e);
                 },
