@@ -5,7 +5,7 @@ var angular = require('angular');
 angular.module('rfid').component('tagStore', {
     bindings: {
     },
-    controller: function (rfidClientService, $scope, $window) {
+    controller: function (rfidClientService, $scope, $window, $mdToast) {
         var self = this;
         self.tagStore = {};
         self.$onInit = function () {
@@ -34,10 +34,32 @@ angular.module('rfid').component('tagStore', {
             var tags = self.tagStore.tags;
             tags.forEach(function (tag, index) {
                 if (tag.isComplete) {
-                    self.rfidClientService.setCheckoutState(tag.id, isCheckoutState);
+                    setCheckoutState(tag.id, isCheckoutState);
                 }
             });
         };
+
+        function setCheckoutState(id,isCheckoutState) {
+            var result = self.rfidClientService.setCheckoutState(id, isCheckoutState);
+            var subscription = result.subscribe(
+                function (message) {
+                },
+                function (e) {
+                    onError(e);
+                },
+                function () {
+                    subscription.dispose();
+                }
+            );
+        }
+
+        function onError(e) {
+            $mdToast.show(
+                $mdToast.simple()
+                    .textContent(e.message)
+                    .position('top')
+                    .action('OK'));
+        }
     },
     template: require('./tag-store.template.html')
 });

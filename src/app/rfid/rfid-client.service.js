@@ -22,17 +22,7 @@ angular.module('rfid').factory('rfidClientService', ['RFID_CONFIG', function (RF
             axRfidClient.reload();
         },
         setCheckoutState: function (id, isCheckoutState) {
-            var result = axRfidClient.setCheckoutState(id, isCheckoutState);
-            var subscription = result.subscribe(
-                function (message) {
-                },
-                function (e) {
-                    onError(e);
-                },
-                function () {
-                    subscription.dispose();
-                }
-            );
+            return axRfidClient.setCheckoutState(id, isCheckoutState);
         },
 
         connect: function (name) {
