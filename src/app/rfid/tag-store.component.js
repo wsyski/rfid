@@ -6,6 +6,45 @@ angular.module('rfid').component('tagStore', {
     bindings: {
     },
     controller: function (rfidClientService, $scope, $window, $mdToast) {
+
+        function setCheckoutState(id,isCheckoutState) {
+            var result = self.rfidClientService.setCheckoutState(id, isCheckoutState);
+            var subscription = result.subscribe(
+                angular.noop,
+                function (e) {
+                    errorHandler(e);
+                },
+                function () {
+                    subscription.dispose();
+                }
+            );
+        }
+
+        function errorHandler(e) {
+            var message;
+            if (e.message) {
+                message=e.message;
+            }
+            else {
+                if (e.target instanceof WebSocket) {
+                    message = "Websocket error";
+                }
+                else {
+                    message = "RFID Client error";
+                }
+            }
+            showToast(message);
+        }
+
+        function showToast(message) {
+            $mdToast.show(
+                $mdToast.simple()
+                    .textContent(message)
+                    .hideDelay(30000)
+                    .position('top')
+                    .action('OK'));
+        }
+
         var self = this;
         self.tagStore = {};
         self.$onInit = function () {
@@ -26,7 +65,7 @@ angular.module('rfid').component('tagStore', {
         };
         self.rfidClientService = rfidClientService;
         self.connect = function() {
-            self.rfidClientService.connect($window.navigator.userAgent);
+            self.rfidClientService.connect($window.navigator.userAgent, errorHandler);
         };
         self.disconnect = self.rfidClientService.disconnect;
         self.reload = self.rfidClientService.reload;
@@ -38,27 +77,6 @@ angular.module('rfid').component('tagStore', {
                 }
             });
         };
-
-        function setCheckoutState(id,isCheckoutState) {
-            var result = self.rfidClientService.setCheckoutState(id, isCheckoutState);
-            var subscription = result.subscribe(
-                angular.noop,
-                function (e) {
-                    onError(e);
-                },
-                function () {
-                    subscription.dispose();
-                }
-            );
-        }
-
-        function onError(e) {
-            $mdToast.show(
-                $mdToast.simple()
-                    .textContent(e.message)
-                    .position('top')
-                    .action('OK'));
-        }
     },
     template: require('./tag-store.template.html')
 });

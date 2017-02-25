@@ -25,8 +25,8 @@ angular.module('rfid').factory('rfidClientService', ['RFID_CONFIG', function (RF
             return axRfidClient.setCheckoutState(id, isCheckoutState);
         },
 
-        connect: function (name) {
-            axRfidClient.connect(name);
+        connect: function (name, errorHandler) {
+            axRfidClient.connect(name, errorHandler);
         },
         disconnect: function () {
             axRfidClient.disconnect();
