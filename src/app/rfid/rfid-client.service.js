@@ -8,10 +8,10 @@ angular.module('rfid').factory('rfidClientService', ['RFID_CONFIG', function (RF
     if (RFID_CONFIG.DEBUG) {
         var debugSubscription = axRfidClient.getDebugSubject().subscribe(
             function (message) {
-                console.log("message: %s", JSON.stringify(message))
+                console.log('message: '+JSON.stringify(message))
             },
             function (e) {
-                console.error("error: %s", e);
+                console.error('error: '+e);
             },
             angular.noop
         );

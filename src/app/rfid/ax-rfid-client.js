@@ -56,7 +56,7 @@
         function debugMessage(action, message) {
             if (config.isDebug) {
                 debugSubject.onNext({"action": action, "message": message});
-                console.log("action: %s message: %s", action, JSON.stringify(message));
+                console.log('action: '+action+' message: '+JSON.stringify(message));
             }
         }
 
@@ -81,7 +81,7 @@
                     callback(result);
                 },
                 function (e) {
-                    console.error('error: %s', e);
+                    console.error('error: '+e);
                 },
                 function () {
                     subscription.dispose();
@@ -98,13 +98,13 @@
         }
 
         function probeReaderStatus() {
-            var readerProbe = Rx.Observable.interval(config.readerProbeInterval);
+            var readerProbe = Rx.Observable.interval(config.readerProbeInterval).skip(1);
             return readerProbe.subscribe(
                 function (result) {
                     readerStatus();
                 },
                 function (e) {
-                    console.error('error: %s', e);
+                    console.error('error: '+e);
                 },
                 noop
             );
@@ -200,7 +200,7 @@
                         }
                     }.bind(this),
                     function (e) {
-                        console.error('error: %s', e);
+                        console.error('error: '+e);
                         if (errorHandler) {
                            errorHandler(e);
                         }
