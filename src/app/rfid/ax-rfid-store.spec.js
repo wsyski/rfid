@@ -4,86 +4,92 @@ describe('RFID Store', function () {
 
     describe('AxRfid.TagStore', function () {
         var axRfidTagStore;
+        var subscription;
 
         beforeEach(function () {
             axRfidTagStore = new AxRfid.TagStore();
         });
 
+        afterEach(function () {
+            if (subscription) {
+                subscription.unsubscribe();
+                subscription = null;
+            }
+        });
+
+
         it('verify api', function () {
             expect(typeof axRfidTagStore.subscribe).toBe('function');
         });
 
-        it('setConnected', function () {
+        it('setConnected', function (done) {
+            var expectedState = Object.assign({}, AxRfid.INITIAL_STATE, {isConnected: true, isReady: true});
+            var states = [];
+            subscription = axRfidTagStore.subscribe(function (data) {
+                states.push(data);
+                if (states.length == 2) {
+                    expect(states[0]).toEqual(AxRfid.INITIAL_STATE);
+                    expect(states[1]).toEqual(expectedState);
+                    done();
+                }
+            });
             axRfidTagStore.setConnected(true);
-            var subscription = axRfidTagStore.subscribe(function (data) {
-                    var actualState = data;
-                    var expectedState = Object.assign({}, AxRfid.INITIAL_STATE, {isConnected: true, isReady: true});
-                    expect(actualState).toEqual(expectedState);
-                },
-                null,
-                function () {
-                    subscription.unsubscribe();
-                });
         });
 
-        it('addOrReplaceTag', function () {
-            axRfidTagStore.setConnected(true);
-            axRfidTagStore.addOrReplaceTag(TAG_ID, READER, true);
+        it('addOrReplaceTag', function (done) {
             var expectedState = Object.assign({},
                 AxRfid.INITIAL_STATE,
                 {isConnected: true, isReady: true},
                 {tags: [new AxRfid.Tag(TAG_ID, READER, true)]});
             var states = [];
-            var subscription0 = axRfidTagStore.subscribe(function (data) {
-                    states.push(data);
-                },
-                null,
-                function () {
-                    axRfidTagStore.addOrReplaceTag(TAG_ID, READER, true);
-                    var subscription1 = axRfidTagStore.subscribe(function (data) {
-                            states.push(data);
-                        },
-                        null,
-                        function () {
-                            subscription1.unsubscribe();
-                            expect(states[0]).toEqual(expectedState);
-                            expect(states[1]).toEqual(expectedState);
-
-                        });
-                    subscription0.unsubscribe();
-                });
+            var subscription = axRfidTagStore.subscribe(function (data) {
+                states.push(data);
+                if (states.length == 4) {
+                    expect(states[0]).toEqual(AxRfid.INITIAL_STATE);
+                    expect(states[2]).toEqual(expectedState);
+                    expect(states[3]).toEqual(expectedState);
+                    done();
+                }
+            });
+            axRfidTagStore.setConnected(true);
+            axRfidTagStore.addOrReplaceTag(TAG_ID, READER, true);
+            axRfidTagStore.addOrReplaceTag(TAG_ID, READER, true);
         });
 
-        it('removeTag', function () {
+        it('removeTag', function (done) {
+            var expectedState = Object.assign({}, AxRfid.INITIAL_STATE, {isConnected: true, isReady: true});
+            var states = [];
+            var subscription = axRfidTagStore.subscribe(function (data) {
+                states.push(data);
+                if (states.length == 4) {
+                    expect(states[0]).toEqual(AxRfid.INITIAL_STATE);
+                    expect(states[3]).toEqual(expectedState);
+                    done();
+                }
+            });
             axRfidTagStore.setConnected(true);
             axRfidTagStore.addOrReplaceTag(TAG_ID, READER, true);
             axRfidTagStore.removeTag(TAG_ID);
-            var expectedState = Object.assign({}, AxRfid.INITIAL_STATE, {isConnected: true, isReady: true});
-            var subscription = axRfidTagStore.subscribe(function (data) {
-                    expect(data).toEqual(expectedState);
-                },
-                null,
-                function () {
-                    subscription.unsubscribe();
-                });
         });
 
-        it('setCheckoutState', function () {
-            axRfidTagStore.setConnected(true);
-            axRfidTagStore.addOrReplaceTag(TAG_ID, READER, true);
-            axRfidTagStore.setCheckoutState(TAG_ID, true);
-            var tag= new AxRfid.Tag(TAG_ID, READER, true);
+        it('setCheckoutState', function (done) {
+            var tag = new AxRfid.Tag(TAG_ID, READER, true);
             tag.setCheckoutState(true);
             var expectedState = Object.assign({},
                 AxRfid.INITIAL_STATE,
                 {isConnected: true, isReady: true, tags: [tag]});
+            var states = [];
             var subscription = axRfidTagStore.subscribe(function (data) {
-                    expect(data).toEqual(expectedState);
-                },
-                null,
-                function () {
-                    subscription.unsubscribe();
-                });
+                states.push(data);
+                if (states.length == 4) {
+                    expect(states[0]).toEqual(AxRfid.INITIAL_STATE);
+                    expect(states[3]).toEqual(expectedState);
+                    done();
+                }
+            });
+            axRfidTagStore.setConnected(true);
+            axRfidTagStore.addOrReplaceTag(TAG_ID, READER, true);
+            axRfidTagStore.setCheckoutState(TAG_ID, true);
         });
     });
 });
