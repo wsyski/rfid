@@ -66,14 +66,20 @@ window.addEventListener("load", function (event) {
         updateToolbar();
     });
 
-    function onError(e) {
-        console.error(e);
-        if (e.name === "RfidError") {
-            alert('Rfid error cmd:' + e.cmd + ' message: ' + e.message);
+    function errorHandler(e) {
+        var message;
+        if (e.message) {
+            message=e.message;
         }
         else {
-            alert(e.message);
+            if (e.target instanceof WebSocket) {
+                message = "Websocket error";
+            }
+            else {
+                message = "RFID Client error";
+            }
         }
+        alert(message);
     }
 
     function showTagStoreData() {
@@ -91,7 +97,7 @@ window.addEventListener("load", function (event) {
                     function (message) {
                     },
                     function (e) {
-                        onError(e);
+                        errorHandler(e);
                     },
                     function () {
                         subscription.dispose();
@@ -118,7 +124,7 @@ window.addEventListener("load", function (event) {
             function (message) {
             },
             function (e) {
-                onError(e);
+                errorHandler(e);
             },
             function () {
                 subscription.dispose();
@@ -127,7 +133,7 @@ window.addEventListener("load", function (event) {
 
     });
     btnConnect.addEventListener("click", function (event) {
-        axRfidClient.connect(navigator.userAgent);
+        axRfidClient.connect(navigator.userAgent,errorHandler);
     });
 
     btnDisconnect.addEventListener("click", function (event) {

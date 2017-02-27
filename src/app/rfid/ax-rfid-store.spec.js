@@ -28,8 +28,7 @@ describe('RFID Store', function () {
             subscription = axRfidTagStore.subscribe(function (data) {
                 states.push(data);
                 if (states.length == 2) {
-                    expect(states[0]).toEqual(AxRfid.INITIAL_STATE);
-                    expect(states[1]).toEqual(expectedState);
+                    expect(states[states.length-1]).toEqual(expectedState);
                     done();
                 }
             });
@@ -45,9 +44,7 @@ describe('RFID Store', function () {
             var subscription = axRfidTagStore.subscribe(function (data) {
                 states.push(data);
                 if (states.length == 4) {
-                    expect(states[0]).toEqual(AxRfid.INITIAL_STATE);
-                    expect(states[2]).toEqual(expectedState);
-                    expect(states[3]).toEqual(expectedState);
+                    expect(states[states.length-1]).toEqual(expectedState);
                     done();
                 }
             });
@@ -62,8 +59,7 @@ describe('RFID Store', function () {
             var subscription = axRfidTagStore.subscribe(function (data) {
                 states.push(data);
                 if (states.length == 4) {
-                    expect(states[0]).toEqual(AxRfid.INITIAL_STATE);
-                    expect(states[3]).toEqual(expectedState);
+                    expect(states[states.length-1]).toEqual(expectedState);
                     done();
                 }
             });
@@ -82,8 +78,7 @@ describe('RFID Store', function () {
             var subscription = axRfidTagStore.subscribe(function (data) {
                 states.push(data);
                 if (states.length == 4) {
-                    expect(states[0]).toEqual(AxRfid.INITIAL_STATE);
-                    expect(states[3]).toEqual(expectedState);
+                    expect(states[states.length-1]).toEqual(expectedState);
                     done();
                 }
             });
