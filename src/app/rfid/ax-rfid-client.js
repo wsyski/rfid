@@ -134,7 +134,7 @@
         }
 
         function probeReaderStatus() {
-            var readerProbe = Rx.Observable.interval(config.readerProbeInterval).skip(1);
+            var readerProbe = Rx.Observable.interval(config.readerProbeInterval);
             return readerProbe.subscribe(
                 function (result) {
                     readerStatus();
@@ -233,8 +233,7 @@
                     }.bind(this),
                     function (e) {
                         handleError(e);
-                    }.bind(this),
-                    noop
+                    }.bind(this)
                 );
             }
         }
