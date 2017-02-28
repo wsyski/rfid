@@ -21,7 +21,7 @@
 
     Tag.prototype.setCheckoutState = function (isCheckoutState) {
         this.isCheckoutState = isCheckoutState;
-    }
+    };
 
     function tagStoreReducer(state, action) {
 

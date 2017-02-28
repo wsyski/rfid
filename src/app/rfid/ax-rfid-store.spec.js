@@ -17,25 +17,21 @@ describe('RFID Store', function () {
             }
         });
 
-
         it('verify api', function () {
             expect(typeof axRfidTagStore.subscribe).toBe('function');
         });
 
-        it('setConnected', function (done) {
+        it('setConnected', function () {
             var expectedState = Object.assign({}, AxRfid.INITIAL_STATE, {isConnected: true, isReady: true});
             var states = [];
             subscription = axRfidTagStore.subscribe(function (data) {
                 states.push(data);
-                if (states.length == 2) {
-                    expect(states[states.length-1]).toEqual(expectedState);
-                    done();
-                }
             });
             axRfidTagStore.setConnected(true);
+            expect(states[states.length-1]).toEqual(expectedState);
         });
 
-        it('addOrReplaceTag', function (done) {
+        it('addOrReplaceTag', function () {
             var expectedState = Object.assign({},
                 AxRfid.INITIAL_STATE,
                 {isConnected: true, isReady: true},
@@ -43,32 +39,26 @@ describe('RFID Store', function () {
             var states = [];
             var subscription = axRfidTagStore.subscribe(function (data) {
                 states.push(data);
-                if (states.length == 4) {
-                    expect(states[states.length-1]).toEqual(expectedState);
-                    done();
-                }
             });
             axRfidTagStore.setConnected(true);
             axRfidTagStore.addOrReplaceTag(TAG_ID, READER, true);
             axRfidTagStore.addOrReplaceTag(TAG_ID, READER, true);
+            expect(states[states.length-1]).toEqual(expectedState);
         });
 
-        it('removeTag', function (done) {
+        it('removeTag', function () {
             var expectedState = Object.assign({}, AxRfid.INITIAL_STATE, {isConnected: true, isReady: true});
             var states = [];
             var subscription = axRfidTagStore.subscribe(function (data) {
                 states.push(data);
-                if (states.length == 4) {
-                    expect(states[states.length-1]).toEqual(expectedState);
-                    done();
-                }
             });
             axRfidTagStore.setConnected(true);
             axRfidTagStore.addOrReplaceTag(TAG_ID, READER, true);
             axRfidTagStore.removeTag(TAG_ID);
+            expect(states[states.length-1]).toEqual(expectedState);
         });
 
-        it('setCheckoutState', function (done) {
+        it('setCheckoutState', function () {
             var tag = new AxRfid.Tag(TAG_ID, READER, true);
             tag.setCheckoutState(true);
             var expectedState = Object.assign({},
@@ -77,14 +67,11 @@ describe('RFID Store', function () {
             var states = [];
             var subscription = axRfidTagStore.subscribe(function (data) {
                 states.push(data);
-                if (states.length == 4) {
-                    expect(states[states.length-1]).toEqual(expectedState);
-                    done();
-                }
             });
             axRfidTagStore.setConnected(true);
             axRfidTagStore.addOrReplaceTag(TAG_ID, READER, true);
             axRfidTagStore.setCheckoutState(TAG_ID, true);
+            expect(states[states.length-1]).toEqual(expectedState);
         });
     });
 });

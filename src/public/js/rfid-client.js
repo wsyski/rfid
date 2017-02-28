@@ -50,21 +50,6 @@ window.addEventListener("load", function (event) {
     var inputMessage = $("inputMessage");
     var tagStoreData;
     var axRfidClient = new AxRfid.Client({host: host, port: port, isDebug: true});
-    debugSubscription = axRfidClient.getDebugSubject().subscribe(
-        function (message) {
-            showDebugMessage(message);
-        },
-        function (e) {
-            console.error(e);
-        },
-        function () {
-        }
-    );
-    tagStoreSubscription = axRfidClient.getTagStore().subscribe(function (data) {
-        tagStoreData = data;
-        showTagStoreData();
-        updateToolbar();
-    });
 
     function errorHandler(e) {
         var message;
@@ -81,6 +66,23 @@ window.addEventListener("load", function (event) {
         }
         alert(message);
     }
+    axRfidClient.setErrorHandler(errorHandler);
+    debugSubscription = axRfidClient.getDebugSubject().subscribe(
+        function (message) {
+            showDebugMessage(message);
+        },
+        function (e) {
+            console.error(e);
+        },
+        function () {
+        }
+    );
+    tagStoreSubscription = axRfidClient.getTagStore().subscribe(function (data) {
+        tagStoreData = data;
+        showTagStoreData();
+        updateToolbar();
+    });
+
 
     function showTagStoreData() {
         removeChildNodes("tagStore");
@@ -133,7 +135,7 @@ window.addEventListener("load", function (event) {
 
     });
     btnConnect.addEventListener("click", function (event) {
-        axRfidClient.connect(navigator.userAgent,errorHandler);
+        axRfidClient.connect(navigator.userAgent);
     });
 
     btnDisconnect.addEventListener("click", function (event) {

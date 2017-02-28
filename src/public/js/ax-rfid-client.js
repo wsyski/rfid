@@ -23,7 +23,7 @@
     RfidError.prototype = Object.create(Error.prototype);
     RfidError.prototype.constructor = RfidError;
 
-    var CONFIG={host: "localhost", port: 7000, readerProbeInterval: 15000, isDebug: false};
+    var CONFIG={host: "localhost", port: 7000, readerProbeInterval: 10000, isDebug: false};
 
     function Client(overrideConfig) {
         var config = Object.assign({}, CONFIG, overrideConfig);
@@ -32,8 +32,29 @@
         var queue = [];
         var ws;
         var wsSubscription;
+        var onError;
+
+        function setErrorHandler(errorHandler) {
+            onError=errorHandler;
+        }
 
         function noop() {
+        }
+
+        function handleError(e) {
+            console.error('error: '+e);
+            if (onError) {
+                onError(e);
+            }
+        }
+
+        function disconnect() {
+            if (ws) {
+                wsSubscription.dispose();
+            }
+            else {
+                handleError(new RfidError("Not connected"));
+            }
         }
 
         function handleMessage(message) {
@@ -81,7 +102,7 @@
                     callback(result);
                 },
                 function (e) {
-                    console.error('error: '+e);
+                    handleError(e);
                 },
                 function () {
                     subscription.dispose();
@@ -94,7 +115,22 @@
         }
 
         function readerStatus() {
-            sendMessageWithCallback({"cmd": "readerStatus"}, noop);
+            var isError=false;
+            queue.forEach(function(item) {
+               var message=item.message;
+               var cmd=message.cmd;
+               if (cmd==="readerStatus") {
+                  isError=true;
+                  var result=item.result;
+                  result.onError(new RfidError("WebSocket timeout", message.cmd));
+               }
+            });
+            if (isError) {
+                disconnect();
+            }
+            else {
+                sendMessageWithCallback({"cmd": "readerStatus"}, noop);
+            }
         }
 
         function probeReaderStatus() {
@@ -102,11 +138,7 @@
             return readerProbe.subscribe(
                 function (result) {
                     readerStatus();
-                },
-                function (e) {
-                    console.error('error: '+e);
-                },
-                noop
+                }
             );
         }
 
@@ -120,9 +152,9 @@
         }
 
 
-        function connect(name, errorHandler) {
+        function connect(name) {
             if (ws) {
-                console.error("Already connected");
+                handleError(new RfidError("Already connected"));
             }
             else {
                 var probeReaderSubscription;
@@ -200,28 +232,19 @@
                         }
                     }.bind(this),
                     function (e) {
-                        console.error('error: '+e);
-                        if (errorHandler) {
-                           errorHandler(e);
-                        }
+                        handleError(e);
                     }.bind(this),
                     noop
                 );
             }
         }
 
-        function disconnect() {
-            if (ws) {
-                wsSubscription.dispose();
-            }
-            else {
-                console.error("Not connected");
-            }
-        }
-
         return {
-            connect: function (name, errorHandler) {
-                connect(name, errorHandler)
+            setErrorHandler: function (errorHandler) {
+              setErrorHandler(errorHandler);
+            },
+            connect: function (name) {
+                connect(name)
             },
             disconnect: function () {
                 disconnect()

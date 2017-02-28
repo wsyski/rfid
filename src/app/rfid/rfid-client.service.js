@@ -18,6 +18,9 @@ angular.module('rfid').factory('rfidClientService', ['RFID_CONFIG', function (RF
     }
     var tagStore = axRfidClient.getTagStore();
     return {
+        setErrorHandler: function(errorHandler) {
+            axRfidClient.setErrorHandler(errorHandler);
+        },
         reload: function () {
             axRfidClient.reload();
         },
@@ -25,8 +28,8 @@ angular.module('rfid').factory('rfidClientService', ['RFID_CONFIG', function (RF
             return axRfidClient.setCheckoutState(id, isCheckoutState);
         },
 
-        connect: function (name, errorHandler) {
-            axRfidClient.connect(name, errorHandler);
+        connect: function (name) {
+            axRfidClient.connect(name);
         },
         disconnect: function () {
             axRfidClient.disconnect();

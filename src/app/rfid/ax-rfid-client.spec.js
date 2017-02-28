@@ -8,6 +8,7 @@ describe('RFID Client', function () {
 
     describe('AxRfid.Client', function () {
         var axRfidClient;
+        var axRfidTagStore;
         var mockWebSocket;
         var subscription;
 
@@ -18,6 +19,7 @@ describe('RFID Client', function () {
                 openObserver.onNext();
                 return mockWebSocket;
             });
+            axRfidTagStore=axRfidClient.getTagStore();
         });
 
         afterEach(function () {
@@ -27,26 +29,23 @@ describe('RFID Client', function () {
             }
         });
 
-        it('tags', function (done) {
+        it('tags', function () {
             var expectedState = Object.assign({},
                 AxRfid.INITIAL_STATE,
                 {isConnected: true, isReady: true},
                 {tags: [new AxRfid.Tag("id0", READER, true), new AxRfid.Tag("id1", READER, true), new AxRfid.Tag("id2", READER, true)]});
             var states = [];
-            subscription = axRfidClient.getTagStore().subscribe(function (data) {
+            subscription = axRfidTagStore.subscribe(function (data) {
                     states.push(data);
-                    if (states.length==5) {
-                        var lastState = states[states.length - 1];
-                        expect(lastState).toEqual(expectedState);
-                        done();
-                    }
-                });
+            });
             axRfidClient.connect("name");
             TAG_RESPONSES.forEach(function (json) {
                 var e = {};
                 e.data = json;
                 mockWebSocket.onNext(e);
             });
+            var lastState = states[states.length - 1];
+            expect(lastState).toEqual(expectedState);
         });
     });
 })

@@ -49,6 +49,7 @@ angular.module('rfid').component('tagStore', {
         self.tagStore = {};
         self.$onInit = function () {
             console.log('Subscribe');
+            self.rfidClientService.setErrorHandler(errorHandler);
             self.subscription = self.rfidClientService.subscribe(function (data) {
                 console.log('tagStore: '+JSON.stringify(data));
                 $scope.$evalAsync(function () {
@@ -65,7 +66,7 @@ angular.module('rfid').component('tagStore', {
         };
         self.rfidClientService = rfidClientService;
         self.connect = function() {
-            self.rfidClientService.connect($window.navigator.userAgent, errorHandler);
+            self.rfidClientService.connect($window.navigator.userAgent);
         };
         self.disconnect = self.rfidClientService.disconnect;
         self.reload = self.rfidClientService.reload;
