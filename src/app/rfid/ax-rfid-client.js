@@ -271,7 +271,7 @@
 
     exports.Client = Client;
 
-}((window.AxRfid = window.AxRfid || {})));
+}(window.AxRfid = window.AxRfid || {}));
 
 if (typeof module !== "undefined") {
     module.exports = AxRfid.Client;

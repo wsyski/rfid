@@ -147,7 +147,7 @@
     exports.TagStore = TagStore;
     exports.INITIAL_STATE = INITIAL_STATE;
 
-}((window.AxRfid = window.AxRfid || {})));
+}(window.AxRfid = window.AxRfid || {}));
 
 if (typeof module !== "undefined") {
     module.exports = {
