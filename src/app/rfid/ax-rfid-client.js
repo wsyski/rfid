@@ -179,6 +179,9 @@
                 wsSubscription = ws.subscribe(
                     function (e) {
                         var messageAsString = e.data;
+                        if (typeof e.data === "undefined") {
+                           console.log("e: "+e);
+                        }
                         var message = JSON.parse(messageAsString);
                         debugMessage("response", message);
                         switch (message.cmd) {
