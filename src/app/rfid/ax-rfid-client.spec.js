@@ -20,7 +20,6 @@ describe('RFID Client', function () {
         return JSON.stringify({"cmd": "resend"});
     }
 
-
     describe('AxRfid.Client', function () {
         var axRfidClient;
         var axRfidTagStore;
@@ -111,5 +110,4 @@ describe('RFID Client', function () {
         });
 
     });
-
 });
