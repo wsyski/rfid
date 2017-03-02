@@ -13,6 +13,11 @@ describe('RFID Client', function () {
         return JSON.stringify({"cmd": "setCheckoutState", "id": id, "security": isCheckoutState ? "Deactivated" : "Activated"});
     }
 
+    function cmdResendResponse() {
+        return JSON.stringify({"cmd": "resend"});
+    }
+
+
     describe('AxRfid.Client', function () {
         var axRfidClient;
         var axRfidTagStore;
@@ -85,6 +90,19 @@ describe('RFID Client', function () {
             var callback = function () {
                 var cmdSubscription = axRfidClient.setCheckoutState("id0", true);
                 cmdSubscription.dispose();
+            };
+            cmdTest(expectedState, cmdResponses, callback);
+        });
+
+        it('cmd reload', function () {
+            var tag = new AxRfid.Tag("id0", READER, true);
+            var expectedState = Object.assign({},
+                AxRfid.INITIAL_STATE,
+                {isConnected: true, isReady: true, isEnabled: true},
+                {tags: [tag]});
+            var cmdResponses = [cmdTagCompleteResponse("id0"), cmdResendResponse()];
+            var callback = function () {
+                axRfidClient.reload();
             };
             cmdTest(expectedState, cmdResponses, callback);
         });
