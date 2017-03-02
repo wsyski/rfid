@@ -35,7 +35,7 @@
 
         switch (action.type) {
             case 'SET_CONNECTED':
-                return Object.assign({}, INITIAL_STATE, {isConnected: payload.isConnected, isReady: payload.isConnected});
+                return Object.assign({}, INITIAL_STATE, {isConnected: payload.isConnected, isReady: payload.isConnected, isEnabled: payload.isConnected});
             case 'ADD_OR_REPLACE_TAG':
                 return Object.assign({}, state, {tags: removeTag(state.tags, payload.id).concat(new Tag(payload.id, payload.reader, payload.isComplete))});
             case 'REMOVE_TAG':

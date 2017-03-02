@@ -22,7 +22,7 @@ describe('RFID Store', function () {
         });
 
         it('setConnected', function () {
-            var expectedState = Object.assign({}, AxRfid.INITIAL_STATE, {isConnected: true, isReady: true});
+            var expectedState = Object.assign({}, AxRfid.INITIAL_STATE, {isConnected: true, isReady: true, isEnabled: true});
             var states = [];
             subscription = axRfidTagStore.subscribe(function (data) {
                 states.push(data);
@@ -34,7 +34,7 @@ describe('RFID Store', function () {
         it('addOrReplaceTag', function () {
             var expectedState = Object.assign({},
                 AxRfid.INITIAL_STATE,
-                {isConnected: true, isReady: true},
+                {isConnected: true, isReady: true, isEnabled: true},
                 {tags: [new AxRfid.Tag(TAG_ID, READER, true)]});
             var states = [];
             var subscription = axRfidTagStore.subscribe(function (data) {
@@ -47,7 +47,7 @@ describe('RFID Store', function () {
         });
 
         it('removeTag', function () {
-            var expectedState = Object.assign({}, AxRfid.INITIAL_STATE, {isConnected: true, isReady: true});
+            var expectedState = Object.assign({}, AxRfid.INITIAL_STATE, {isConnected: true, isReady: true, isEnabled: true});
             var states = [];
             var subscription = axRfidTagStore.subscribe(function (data) {
                 states.push(data);
@@ -63,7 +63,7 @@ describe('RFID Store', function () {
             tag.setCheckoutState(true);
             var expectedState = Object.assign({},
                 AxRfid.INITIAL_STATE,
-                {isConnected: true, isReady: true, tags: [tag]});
+                {isConnected: true, isReady: true, isEnabled: true, tags: [tag]});
             var states = [];
             var subscription = axRfidTagStore.subscribe(function (data) {
                 states.push(data);

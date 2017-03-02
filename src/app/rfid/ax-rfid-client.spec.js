@@ -66,7 +66,7 @@ describe('RFID Client', function () {
         it('cmd tags: all complete', function () {
             var expectedState = Object.assign({},
                 AxRfid.INITIAL_STATE,
-                {isConnected: true, isReady: true},
+                {isConnected: true, isReady: true, isEnabled: true},
                 {tags: [new AxRfid.Tag(ID_0, READER, true), new AxRfid.Tag(ID_1, READER, true), new AxRfid.Tag(ID_2, READER, true)]});
             var cmdResponses = [cmdTagCompleteResponse(ID_0), cmdTagCompleteResponse(ID_1), cmdTagCompleteResponse(ID_2)];
             cmdTest(expectedState, cmdResponses);
@@ -75,7 +75,7 @@ describe('RFID Client', function () {
         it('cmd tags: 1 partial and 2 complete', function () {
             var expectedState = Object.assign({},
                 AxRfid.INITIAL_STATE,
-                {isConnected: true, isReady: true},
+                {isConnected: true, isReady: true, isEnabled: true},
                 {tags: [new AxRfid.Tag(ID_0, READER, false), new AxRfid.Tag(ID_1, READER, true), new AxRfid.Tag(ID_2, READER, true)]});
             var cmdResponses = [cmdTagPartialResponse(ID_0), cmdTagCompleteResponse(ID_1), cmdTagCompleteResponse(ID_2)];
             cmdTest(expectedState, cmdResponses);
@@ -86,7 +86,7 @@ describe('RFID Client', function () {
             tag.setCheckoutState(true);
             var expectedState = Object.assign({},
                 AxRfid.INITIAL_STATE,
-                {isConnected: true, isReady: true},
+                {isConnected: true, isReady: true, isEnabled: true},
                 {tags: [tag]});
             var cmdResponses = [cmdTagCompleteResponse(ID_0), cmdSetCheckoutStateResponse(ID_0, true)];
             var callback = function () {
