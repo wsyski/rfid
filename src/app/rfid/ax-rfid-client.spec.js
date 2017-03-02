@@ -1,5 +1,8 @@
 describe('RFID Client', function () {
     var READER = "1";
+    var ID_0 = "id0";
+    var ID_1 = "id1";
+    var ID_2 = "id2";
 
     function cmdTagCompleteResponse(id) {
         return JSON.stringify({"cmd": "tag", "id": id, "type": "Item", "reason": "Firsttime new complete", "reader": READER});
@@ -65,8 +68,8 @@ describe('RFID Client', function () {
             var expectedState = Object.assign({},
                 AxRfid.INITIAL_STATE,
                 {isConnected: true, isReady: true},
-                {tags: [new AxRfid.Tag("id0", READER, true), new AxRfid.Tag("id1", READER, true), new AxRfid.Tag("id2", READER, true)]});
-            var cmdResponses = [cmdTagCompleteResponse("id0"), cmdTagCompleteResponse("id1"), cmdTagCompleteResponse("id2")];
+                {tags: [new AxRfid.Tag(ID_0, READER, true), new AxRfid.Tag(ID_1, READER, true), new AxRfid.Tag(ID_2, READER, true)]});
+            var cmdResponses = [cmdTagCompleteResponse(ID_0), cmdTagCompleteResponse(ID_1), cmdTagCompleteResponse(ID_2)];
             cmdTest(expectedState, cmdResponses);
         });
 
@@ -74,33 +77,33 @@ describe('RFID Client', function () {
             var expectedState = Object.assign({},
                 AxRfid.INITIAL_STATE,
                 {isConnected: true, isReady: true},
-                {tags: [new AxRfid.Tag("id0", READER, false), new AxRfid.Tag("id1", READER, true), new AxRfid.Tag("id2", READER, true)]});
-            var cmdResponses = [cmdTagPartialResponse("id0"), cmdTagCompleteResponse("id1"), cmdTagCompleteResponse("id2")];
+                {tags: [new AxRfid.Tag(ID_0, READER, false), new AxRfid.Tag(ID_1, READER, true), new AxRfid.Tag(ID_2, READER, true)]});
+            var cmdResponses = [cmdTagPartialResponse(ID_0), cmdTagCompleteResponse(ID_1), cmdTagCompleteResponse(ID_2)];
             cmdTest(expectedState, cmdResponses);
         });
 
         it('cmd checkout', function () {
-            var tag = new AxRfid.Tag("id0", READER, true);
+            var tag = new AxRfid.Tag(ID_0, READER, true);
             tag.setCheckoutState(true);
             var expectedState = Object.assign({},
                 AxRfid.INITIAL_STATE,
                 {isConnected: true, isReady: true},
                 {tags: [tag]});
-            var cmdResponses = [cmdTagCompleteResponse("id0"), cmdSetCheckoutStateResponse("id0", true)];
+            var cmdResponses = [cmdTagCompleteResponse(ID_0), cmdSetCheckoutStateResponse(ID_0, true)];
             var callback = function () {
-                var cmdSubscription = axRfidClient.setCheckoutState("id0", true);
+                var cmdSubscription = axRfidClient.setCheckoutState(ID_0, true);
                 cmdSubscription.dispose();
             };
             cmdTest(expectedState, cmdResponses, callback);
         });
 
         it('cmd reload', function () {
-            var tag = new AxRfid.Tag("id0", READER, true);
+            var tag = new AxRfid.Tag(ID_0, READER, true);
             var expectedState = Object.assign({},
                 AxRfid.INITIAL_STATE,
                 {isConnected: true, isReady: true, isEnabled: true},
                 {tags: [tag]});
-            var cmdResponses = [cmdTagCompleteResponse("id0"), cmdResendResponse()];
+            var cmdResponses = [cmdTagCompleteResponse(ID_0), cmdResendResponse()];
             var callback = function () {
                 axRfidClient.reload();
             };
