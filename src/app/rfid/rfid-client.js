@@ -158,31 +158,32 @@
             return sendMessage({"cmd": "setCheckoutState", "id": id, "security": security})
         }
 
-
         function connect(name) {
+            var result = new Rx.ReplaySubject(0);
             if (ws) {
-                handleError(new RfidError("Already connected"));
+                result.onError(new RfidError("Already connected"));
             }
             else {
                 var probeReaderSubscription;
                 var openObserver = Rx.Observer.create(function (e) {
                     config.debugLogger('Connected');
                     tagStore.setConnected(true);
-                    queue = [];
+                    setClientName(name);
+                    probeReaderSubscription = probeReaderStatus();
+                    result.onCompleted();
                 }.bind(this));
 
                 var closingObserver = Rx.Observer.create(function () {
                     config.debugLogger('Disconnected');
                     tagStore.setConnected(false);
                     ws = null;
+                    queue = [];
                     if (probeReaderSubscription) {
                         probeReaderSubscription.dispose();
                     }
                 }.bind(this));
 
                 ws = Rx.DOM.fromWebSocket("ws://" + config.host + ":" + config.port, null, openObserver, closingObserver);
-                setClientName(name);
-                probeReaderSubscription = probeReaderStatus();
                 wsSubscription = ws.subscribe(
                     function (e) {
                         var messageAsString = e.data;
@@ -243,6 +244,7 @@
                     }.bind(this)
                 );
             }
+            return result;
         }
 
         return {
@@ -250,7 +252,7 @@
                 setErrorHandler(errorHandler);
             },
             connect: function (name) {
-                connect(name)
+                return connect(name);
             },
             disconnect: function () {
                 disconnect()

@@ -8,9 +8,12 @@ config(['$locationProvider' ,'$routeProvider',
         //$locationProvider.hashPrefix('!');
 
         $routeProvider.
-        when('/', {
-            template: '<tag-store></tag-store>'
+        when('/complex', {
+            template: '<rfid-view-complex></rfid-view-complex>'
         }).
-        otherwise('/');
+        when('/simple', {
+            template: '<rfid-view-simple></rfid-view-simple>'
+        }).
+        otherwise('/simple');
     }
 ]);
