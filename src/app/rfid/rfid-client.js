@@ -164,12 +164,12 @@
                 result.onError(new RfidError("Already connected"));
             }
             else {
-                var probeReaderSubscription;
+                var readerProbeSubscription;
                 var openObserver = Rx.Observer.create(function (e) {
                     config.debugLogger('Connected');
                     tagStore.setConnected(true);
                     setClientName(name);
-                    probeReaderSubscription = probeReaderStatus();
+                    readerProbeSubscription = probeReaderStatus();
                     result.onCompleted();
                 }.bind(this));
 
@@ -178,8 +178,8 @@
                     tagStore.setConnected(false);
                     ws = null;
                     queue = [];
-                    if (probeReaderSubscription) {
-                        probeReaderSubscription.dispose();
+                    if (readerProbeSubscription) {
+                        readerProbeSubscription.dispose();
                     }
                 }.bind(this));
 

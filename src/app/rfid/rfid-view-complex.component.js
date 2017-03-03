@@ -8,14 +8,14 @@ angular.module('rfid').component('rfidViewComplex', {
     controller: function (rfidClientService, $scope, $window, $log, utilService) {
 
         function setCheckoutState(id,isCheckoutState) {
-            var result = self.rfidClientService.setCheckoutState(id, isCheckoutState);
-            var subscription = result.subscribe(
+            var result = rfidClientService.setCheckoutState(id, isCheckoutState);
+            var cmdSubscription = result.subscribe(
                 angular.noop,
                 function (e) {
                     errorHandler(e);
                 },
                 function () {
-                    subscription.dispose();
+                    cmdSubscription.dispose();
                 }
             );
         }
@@ -40,8 +40,8 @@ angular.module('rfid').component('rfidViewComplex', {
         self.tagStore = {};
         self.$onInit = function () {
             $log.debug('Subscribe');
-            self.rfidClientService.setErrorHandler(errorHandler);
-            self.subscription = self.rfidClientService.subscribe(function (data) {
+            rfidClientService.setErrorHandler(errorHandler);
+            self.tagStoreSubscription = rfidClientService.subscribe(function (data) {
                 $log.debug('tagStore: '+JSON.stringify(data));
                 $scope.$evalAsync(function () {
                     self.tagStore = data;
@@ -50,17 +50,25 @@ angular.module('rfid').component('rfidViewComplex', {
         };
         self.$onDestroy = function() {
             if (self.tagStore.isConnected) {
-                self.rfidClientService.disconnect();
+                rfidClientService.disconnect();
             }
             $log.debug('Unsubscribe');
-            self.subscription.unsubscribe();
+            self.tagStoreSubscription.unsubscribe();
         };
-        self.rfidClientService = rfidClientService;
         self.connect = function() {
-            self.rfidClientService.connect($window.navigator.userAgent);
+            var result=rfidClientService.connect($window.navigator.userAgent);
+            var connectSubscription=result.subscribe(
+                angular.noop,
+                function(e){
+                    errorHandler(e);
+                },
+                function(){
+                    connectSubscription.dispose();
+                },
+            );
         };
-        self.disconnect = self.rfidClientService.disconnect;
-        self.reload = self.rfidClientService.reload;
+        self.disconnect = rfidClientService.disconnect;
+        self.reload = rfidClientService.reload;
         self.setCheckoutState = function (isCheckoutState) {
             var tags = self.tagStore.tags;
             tags.forEach(function (tag, index) {
