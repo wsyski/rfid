@@ -23,7 +23,14 @@
     RfidError.prototype = Object.create(Error.prototype);
     RfidError.prototype.constructor = RfidError;
 
-    var CONFIG={host: "localhost", port: 7000, readerProbeInterval: 10000, isDebug: false};
+    var CONFIG = {
+        host: "localhost",
+        port: 7000,
+        readerProbeInterval: 10000,
+        isDebug: false,
+        debugLogger: console.debug.bind(console),
+        errorLogger: console.error.bind(console)
+    };
 
     function Client(overrideConfig) {
         var config = Object.assign({}, CONFIG, overrideConfig);
@@ -35,14 +42,14 @@
         var onError;
 
         function setErrorHandler(errorHandler) {
-            onError=errorHandler;
+            onError = errorHandler;
         }
 
         function noop() {
         }
 
         function handleError(e) {
-            console.error('error: '+e);
+            config.errorLogger('error: ' + e);
             if (onError) {
                 onError(e);
             }
@@ -77,7 +84,7 @@
         function debugMessage(action, message) {
             if (config.isDebug) {
                 debugSubject.onNext({"action": action, "message": message});
-                console.log('action: '+action+' message: '+JSON.stringify(message));
+                config.debugLogger('action: ' + action + ' message: ' + JSON.stringify(message));
             }
         }
 
@@ -115,15 +122,15 @@
         }
 
         function readerStatus() {
-            var isError=false;
-            queue.forEach(function(item) {
-               var message=item.message;
-               var cmd=message.cmd;
-               if (cmd==="readerStatus") {
-                  isError=true;
-                  var result=item.result;
-                  result.onError(new RfidError("WebSocket timeout", message.cmd));
-               }
+            var isError = false;
+            queue.forEach(function (item) {
+                var message = item.message;
+                var cmd = message.cmd;
+                if (cmd === "readerStatus") {
+                    isError = true;
+                    var result = item.result;
+                    result.onError(new RfidError("WebSocket timeout", message.cmd));
+                }
             });
             if (isError) {
                 disconnect();
@@ -134,7 +141,7 @@
         }
 
         function probeReaderStatus() {
-            var readerProbe = Rx.Observable.interval(config.readerProbeInterval).skip(1);
+            var readerProbe = Rx.Observable.interval(config.readerProbeInterval);
             return readerProbe.subscribe(
                 function (result) {
                     readerStatus();
@@ -159,23 +166,23 @@
             else {
                 var probeReaderSubscription;
                 var openObserver = Rx.Observer.create(function (e) {
-                    console.log('Connected');
+                    config.debugLogger('Connected');
                     tagStore.setConnected(true);
                     queue = [];
                 }.bind(this));
 
                 var closingObserver = Rx.Observer.create(function () {
-                    console.log('Disconnected');
+                    config.debugLogger('Disconnected');
                     tagStore.setConnected(false);
                     ws = null;
                     if (probeReaderSubscription) {
-                       probeReaderSubscription.dispose();
+                        probeReaderSubscription.dispose();
                     }
                 }.bind(this));
 
                 ws = Rx.DOM.fromWebSocket("ws://" + config.host + ":" + config.port, null, openObserver, closingObserver);
                 setClientName(name);
-                probeReaderSubscription=probeReaderStatus();
+                probeReaderSubscription = probeReaderStatus();
                 wsSubscription = ws.subscribe(
                     function (e) {
                         var messageAsString = e.data;
@@ -209,7 +216,7 @@
                                 handleMessage(message);
                                 break;
                             case "readerStatus":
-                                if (message.status==="online") {
+                                if (message.status === "online") {
                                     tagStore.setReady(true);
                                 }
                                 else {
@@ -233,15 +240,14 @@
                     }.bind(this),
                     function (e) {
                         handleError(e);
-                    }.bind(this),
-                    noop
+                    }.bind(this)
                 );
             }
         }
 
         return {
             setErrorHandler: function (errorHandler) {
-              setErrorHandler(errorHandler);
+                setErrorHandler(errorHandler);
             },
             connect: function (name) {
                 connect(name)
@@ -272,7 +278,7 @@
 
     exports.Client = Client;
 
-}((window.AxRfid = window.AxRfid || {})));
+}(window.AxRfid = window.AxRfid || {}));
 
 if (typeof module !== "undefined") {
     module.exports = AxRfid.Client;
