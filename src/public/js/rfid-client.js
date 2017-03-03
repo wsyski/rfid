@@ -1,157 +1,279 @@
-'use strict';
+(function (exports) {
+    'use strict';
 
-
-function $(id) {
-    return document.getElementById(id);
-}
-function removeChildNodes(id) {
-    var node = $(id);
-    while (node.firstChild) {
-        node.removeChild(node.firstChild);
-    }
-}
-
-function getObjectHtml(object) {
-    var divNode = document.createElement("DIV");
-    var textNode = document.createTextNode(JSON.stringify(object));
-    divNode.appendChild(textNode);
-    return divNode;
-}
-
-function showDebugMessage(message) {
-    var debugNode = $("debug");
-    var liNode = document.createElement("LI");
-    if (debugNode.firstElementChild) {
-        debugNode.insertBefore(liNode, debugNode.firstElementChild);
+    var AxRfidTagStore;
+    if (typeof require === "undefined") {
+        AxRfidTagStore = AxRfid.TagStore;
     }
     else {
-        debugNode.appendChild(liNode);
+        require('rx-lite');
+        require('rx-dom');
+        AxRfidTagStore = require('./rfid-store').TagStore;
     }
-    liNode.appendChild(getObjectHtml(message));
-}
 
-var debugSubscription;
-var tagStoreSubscription;
-window.addEventListener("unload", function (event) {
-    debugSubscription.dispose();
-    tagStoreSubscription.unsubscribe();
-});
-window.addEventListener("load", function (event) {
-    //var host = window.document.location.host.replace(/:.*/, '');
-    var host = 'lulpreserv3';
-    var port = 7000;
-    var btnCommand = $("btnCommand");
-    var btnConnect = $("btnConnect");
-    var btnDisconnect = $("btnDisconnect");
-    var btnClear = $("btnClear");
-    var btnReload = $("btnReload");
-    var btnCheckout = $("btnCheckout");
-    var btnCheckin = $("btnCheckin");
-    var inputMessage = $("inputMessage");
-    var tagStoreData;
-    var axRfidClient = new AxRfid.Client({host: host, port: port, isDebug: true});
-
-    function errorHandler(e) {
-        var message;
-        if (e.message) {
-            message=e.message;
+    function RfidError(message, cmd) {
+        this.name = 'RfidError';
+        this.message = message || 'Rfid error';
+        if (cmd) {
+            this.cmd = cmd;
         }
-        else {
-            if (e.target instanceof WebSocket) {
-                message = "Websocket error";
+        this.stack = (new Error()).stack;
+    }
+
+    RfidError.prototype = Object.create(Error.prototype);
+    RfidError.prototype.constructor = RfidError;
+
+    var CONFIG={host: "localhost", port: 7000, readerProbeInterval: 10000, isDebug: false};
+
+    function Client(overrideConfig) {
+        var config = Object.assign({}, CONFIG, overrideConfig);
+        var debugSubject = new Rx.Subject();
+        var tagStore = new AxRfidTagStore();
+        var queue = [];
+        var ws;
+        var wsSubscription;
+        var onError;
+
+        function setErrorHandler(errorHandler) {
+            onError=errorHandler;
+        }
+
+        function noop() {
+        }
+
+        function handleError(e) {
+            console.error('error: '+e);
+            if (onError) {
+                onError(e);
+            }
+        }
+
+        function disconnect() {
+            if (ws) {
+                wsSubscription.dispose();
             }
             else {
-                message = "RFID Client error";
+                handleError(new RfidError("Not connected"));
             }
         }
-        alert(message);
-    }
-    axRfidClient.setErrorHandler(errorHandler);
-    debugSubscription = axRfidClient.getDebugSubject().subscribe(
-        function (message) {
-            showDebugMessage(message);
-        },
-        function (e) {
-            console.error(e);
-        },
-        function () {
+
+        function handleMessage(message) {
+            if (queue.length > 0) {
+                var item = queue.shift();
+                var result = item.result;
+                if (message.cmd === "error") {
+                    result.onError(new RfidError(message.result, message.incmd));
+                }
+                else {
+                    result.onNext(message);
+                    result.onCompleted();
+                }
+            }
+            else {
+                result.onError(new RfidError("Unexpected message: " + messageAsString, message.cmd));
+            }
         }
-    );
-    tagStoreSubscription = axRfidClient.getTagStore().subscribe(function (data) {
-        tagStoreData = data;
-        showTagStoreData();
-        updateToolbar();
-    });
+
+        function debugMessage(action, message) {
+            if (config.isDebug) {
+                debugSubject.onNext({"action": action, "message": message});
+                console.log('action: '+action+' message: '+JSON.stringify(message));
+            }
+        }
+
+        function sendMessage(message) {
+            var result = new Rx.ReplaySubject(1);
+            if (ws) {
+                var messageAsString = JSON.stringify(message);
+                debugMessage("request", message);
+                ws.onNext(messageAsString);
+                queue.push({"result": result, "message": message});
+                return result;
+            }
+            else {
+                result.onError(new RfidError("Not connected", message.cmd));
+            }
+        }
+
+        function sendMessageWithCallback(message, callback) {
+            var result = sendMessage(message);
+            var subscription = result.subscribe(
+                function (result) {
+                    callback(result);
+                },
+                function (e) {
+                    handleError(e);
+                },
+                function () {
+                    subscription.dispose();
+                }
+            );
+        }
+
+        function setClientName(name) {
+            sendMessageWithCallback({"cmd": "remoteName", "name": name}, noop);
+        }
+
+        function readerStatus() {
+            var isError=false;
+            queue.forEach(function(item) {
+               var message=item.message;
+               var cmd=message.cmd;
+               if (cmd==="readerStatus") {
+                  isError=true;
+                  var result=item.result;
+                  result.onError(new RfidError("WebSocket timeout", message.cmd));
+               }
+            });
+            if (isError) {
+                disconnect();
+            }
+            else {
+                sendMessageWithCallback({"cmd": "readerStatus"}, noop);
+            }
+        }
+
+        function probeReaderStatus() {
+            var readerProbe = Rx.Observable.interval(config.readerProbeInterval).skip(1);
+            return readerProbe.subscribe(
+                function (result) {
+                    readerStatus();
+                }
+            );
+        }
+
+        function reload() {
+            sendMessageWithCallback({"cmd": "resend"}, noop);
+        }
+
+        function setCheckoutState(id, isCheckoutState) {
+            var security = isCheckoutState ? "Deactivated" : "Activated";
+            return sendMessage({"cmd": "setCheckoutState", "id": id, "security": security})
+        }
 
 
-    function showTagStoreData() {
-        removeChildNodes("tagStore");
-        var divNode = $("tagStore");
-        divNode.appendChild(getObjectHtml(tagStoreData));
-    }
+        function connect(name) {
+            if (ws) {
+                handleError(new RfidError("Already connected"));
+            }
+            else {
+                var probeReaderSubscription;
+                var openObserver = Rx.Observer.create(function (e) {
+                    console.log('Connected');
+                    tagStore.setConnected(true);
+                    queue = [];
+                }.bind(this));
 
-    function setCheckoutState(isCheckoutState) {
-        var tags = tagStoreData.tags;
-        tags.forEach(function (tag, index) {
-            if (tag.isComplete) {
-                var result = axRfidClient.setCheckoutState(tag.id, isCheckoutState);
-                var subscription = result.subscribe(
-                    function (message) {
-                    },
-                    function (e) {
-                        errorHandler(e);
-                    },
-                    function () {
-                        subscription.dispose();
+                var closingObserver = Rx.Observer.create(function () {
+                    console.log('Disconnected');
+                    tagStore.setConnected(false);
+                    ws = null;
+                    if (probeReaderSubscription) {
+                       probeReaderSubscription.dispose();
                     }
+                }.bind(this));
+
+                ws = Rx.DOM.fromWebSocket("ws://" + config.host + ":" + config.port, null, openObserver, closingObserver);
+                setClientName(name);
+                probeReaderSubscription=probeReaderStatus();
+                wsSubscription = ws.subscribe(
+                    function (e) {
+                        var messageAsString = e.data;
+                        var message = JSON.parse(messageAsString);
+                        debugMessage("response", message);
+                        switch (message.cmd) {
+                            case "tag":
+                                var reason = message.reason;
+                                var id = message.id;
+                                var reader = message.reader;
+                                switch (reason) {
+                                    case 'Reader empty':
+                                        tagStore.removeAllTags();
+                                        break;
+                                    case 'Removed':
+                                        tagStore.removeTag(id);
+                                        break;
+                                    case 'Partial':
+                                    case 'Firsttime new partial':
+                                        tagStore.addOrReplaceTag(id, reader, false);
+                                        break;
+                                    default:
+                                        tagStore.addOrReplaceTag(id, reader, true);
+                                }
+                                break;
+                            case "disabled":
+                                tagStore.setEnabled(false);
+                                break;
+                            case "enable":
+                                tagStore.setEnabled(true);
+                                handleMessage(message);
+                                break;
+                            case "readerStatus":
+                                if (message.status==="online") {
+                                    tagStore.setReady(true);
+                                }
+                                else {
+                                    tagStore.setReady(false);
+                                    tagStore.setEnabled(false);
+                                }
+                                handleMessage(message);
+                                break;
+                            case "resend":
+                            case "Resend":
+                                tagStore.setEnabled(true);
+                                handleMessage(message);
+                                break;
+                            case "setCheckoutState":
+                                tagStore.setCheckoutState(message.id, message.security === "Deactivated");
+                                handleMessage(message);
+                                break;
+                            default:
+                                handleMessage(message);
+                        }
+                    }.bind(this),
+                    function (e) {
+                        handleError(e);
+                    }.bind(this),
+                    noop
                 );
             }
-        });
-    }
+        }
 
-    function updateToolbar() {
-        var isConnected = tagStoreData.isConnected;
-        btnCommand.disabled = !isConnected;
-        btnConnect.disabled = isConnected;
-        btnDisconnect.disabled = !isConnected;
-        btnReload.disabled = !isConnected;
-        btnCheckout.disabled = !isConnected;
-        btnCheckin.disabled = !isConnected;
-    }
+        return {
+            setErrorHandler: function (errorHandler) {
+              setErrorHandler(errorHandler);
+            },
+            connect: function (name) {
+                connect(name)
+            },
+            disconnect: function () {
+                disconnect()
+            },
+            reload: function () {
+                reload()
+            },
+            setCheckoutState: function (id, isCheckoutState) {
+                return setCheckoutState(id, isCheckoutState);
+            },
 
-    btnCommand.addEventListener("click", function (event) {
-        var messageAsString = inputMessage.value;
-        var result = axRfidClient.sendMessage(JSON.parse(messageAsString));
-        var subscription = result.subscribe(
-            function (message) {
+            getDebugSubject: function () {
+                return debugSubject;
             },
-            function (e) {
-                errorHandler(e);
+
+            getTagStore: function () {
+                return tagStore;
             },
-            function () {
-                subscription.dispose();
+
+            sendMessage: function (message) {
+                return sendMessage(message);
             }
-        );
+        }
+    }
 
-    });
-    btnConnect.addEventListener("click", function (event) {
-        axRfidClient.connect(navigator.userAgent);
-    });
+    exports.Client = Client;
 
-    btnDisconnect.addEventListener("click", function (event) {
-        axRfidClient.disconnect();
-    });
-    btnClear.addEventListener("click", function (event) {
-        removeChildNodes("debug");
-    });
-    btnReload.addEventListener("click", function (event) {
-        axRfidClient.reload();
-    });
-    btnCheckout.addEventListener("click", function (event) {
-        setCheckoutState(true);
-    });
-    btnCheckin.addEventListener("click", function (event) {
-        setCheckoutState(false);
-    });
-});
+}((window.AxRfid = window.AxRfid || {})));
 
+if (typeof module !== "undefined") {
+    module.exports = AxRfid.Client;
+}

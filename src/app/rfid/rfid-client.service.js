@@ -1,24 +1,30 @@
 'use strict';
 
-var AxRfidClient = require('./ax-rfid-client');
+var AxRfidClient = require('./rfid-client');
 var angular = require('angular');
 
-angular.module('rfid').factory('rfidClientService', ['RFID_CONFIG', function (RFID_CONFIG) {
-    var axRfidClient = new AxRfidClient({host: RFID_CONFIG.HOST, port: RFID_CONFIG.PORT, isDebug: RFID_CONFIG.DEBUG});
+angular.module('rfid').factory('rfidClientService', ['RFID_CONFIG','$log', function (RFID_CONFIG, $log) {
+    var axRfidClient = new AxRfidClient({
+        host: RFID_CONFIG.HOST,
+        port: RFID_CONFIG.PORT,
+        isDebug: RFID_CONFIG.DEBUG,
+        debugLogger: $log.debug.bind($log),
+        errorLogger: $log.error.bind($log)
+    });
     if (RFID_CONFIG.DEBUG) {
         var debugSubscription = axRfidClient.getDebugSubject().subscribe(
             function (message) {
-                console.log('message: '+JSON.stringify(message))
+                $log.debug('message: ' + JSON.stringify(message))
             },
             function (e) {
-                console.error('error: '+e);
+                $log.debug('error: ' + e);
             },
             angular.noop
         );
     }
     var tagStore = axRfidClient.getTagStore();
     return {
-        setErrorHandler: function(errorHandler) {
+        setErrorHandler: function (errorHandler) {
             axRfidClient.setErrorHandler(errorHandler);
         },
         reload: function () {

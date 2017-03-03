@@ -5,7 +5,7 @@ var angular = require('angular');
 angular.module('rfid').component('tagStore', {
     bindings: {
     },
-    controller: function (rfidClientService, $scope, $window, $mdToast) {
+    controller: function (rfidClientService, $scope, $window, $log, $mdToast) {
 
         function setCheckoutState(id,isCheckoutState) {
             var result = self.rfidClientService.setCheckoutState(id, isCheckoutState);
@@ -48,10 +48,10 @@ angular.module('rfid').component('tagStore', {
         var self = this;
         self.tagStore = {};
         self.$onInit = function () {
-            console.log('Subscribe');
+            $log.debug('Subscribe');
             self.rfidClientService.setErrorHandler(errorHandler);
             self.subscription = self.rfidClientService.subscribe(function (data) {
-                console.log('tagStore: '+JSON.stringify(data));
+                $log.debug('tagStore: '+JSON.stringify(data));
                 $scope.$evalAsync(function () {
                     self.tagStore = data;
                 });
@@ -61,7 +61,7 @@ angular.module('rfid').component('tagStore', {
             if (self.tagStore) {
                 self.rfidClientService.disconnect();
             }
-            console.log('Unsubscribe');
+            $log.debug('Unsubscribe');
             self.subscription.unsubscribe();
         };
         self.rfidClientService = rfidClientService;
