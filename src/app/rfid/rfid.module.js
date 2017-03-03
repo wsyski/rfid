@@ -1,8 +1,9 @@
 'use strict';
 
-var angular = require('angular');
+var angular = require('angular'),
+    util = require('../util/util.module');
 
-module.exports = angular.module('rfid', []);
+module.exports = angular.module('rfid', ['util']);
 
 require('./tag-detail.component');
 require('./tag-store.component');

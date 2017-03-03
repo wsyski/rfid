@@ -5,7 +5,7 @@ var angular = require('angular');
 angular.module('rfid').component('tagStore', {
     bindings: {
     },
-    controller: function (rfidClientService, $scope, $window, $log, $mdToast) {
+    controller: function (rfidClientService, $scope, $window, $log, utilService) {
 
         function setCheckoutState(id,isCheckoutState) {
             var result = self.rfidClientService.setCheckoutState(id, isCheckoutState);
@@ -33,16 +33,7 @@ angular.module('rfid').component('tagStore', {
                     message = "RFID Client error";
                 }
             }
-            showToast(message);
-        }
-
-        function showToast(message) {
-            $mdToast.show(
-                $mdToast.simple()
-                    .textContent(message)
-                    .hideDelay(30000)
-                    .position('top')
-                    .action('OK'));
+            utilService.showToast(message);
         }
 
         var self = this;
