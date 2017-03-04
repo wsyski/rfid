@@ -24,6 +24,7 @@ describe('RFID Client', function () {
         var axRfidClient;
         var axRfidTagStore;
         var mockWebSocket;
+        var openObserverOnNext;
 
         function cmdTest(expectedState, cmdRespones, callback) {
             var states = [];
@@ -31,6 +32,7 @@ describe('RFID Client', function () {
                 states.push(data);
             });
             axRfidClient.connect("name");
+            openObserverOnNext();
             if (callback) {
                 callback();
             }
@@ -48,13 +50,13 @@ describe('RFID Client', function () {
             axRfidClient = new AxRfid.Client({isDebug: true});
             mockWebSocket = new Rx.Subject();
             spyOn(Rx.DOM, 'fromWebSocket').and.callFake(function (url, protocol, openObserver, closingObserver) {
-                openObserver.onNext();
+                openObserverOnNext=openObserver.onNext.bind(openObserver);
                 return mockWebSocket;
             });
-            var originalOnNext = mockWebSocket.onNext.bind(mockWebSocket);
+            var mockWebsocketOnNext = mockWebSocket.onNext.bind(mockWebSocket);
             spyOn(mockWebSocket, 'onNext').and.callFake(function (e) {
                 if (e.data) {
-                    return originalOnNext(e);
+                    return mockWebsocketOnNext(e);
                 }
                 else {
                     console.debug("skipping: " + e);
