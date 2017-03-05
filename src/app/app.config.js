@@ -11,9 +11,12 @@ config(['$locationProvider' ,'$routeProvider',
         when('/complex', {
             template: '<rfid-view-complex></rfid-view-complex>'
         }).
+        when('/form', {
+            template: '<rfid-view-form></rfid-view-form>'
+        }).
         when('/simple', {
             template: '<rfid-view-simple></rfid-view-simple>'
         }).
-        otherwise('/simple');
+        otherwise('/form');
     }
 ]);

@@ -1,0 +1,14 @@
+<div>
+    <table class="mdl-data-table">
+        <tr ng-repeat="tag in $ctrl.tags">
+            <td>
+                <tag-detail id="tag.id" reader="tag.reader" complete="tag.isComplete" checkoutstate="tag.isCheckoutState"></tag-detail>
+            </td>
+        </tr>
+    </table>
+    <div>
+        <form ng-submit="$ctrl.onSubmit()">
+            <input type="text" name="test" class="form-control" ng-model="$ctrl.value" rfid-events>
+        </form>
+    </div>
+</div>
