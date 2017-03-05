@@ -2,7 +2,10 @@
 
 angular.module('rfid')
     .constant('RFID_CONFIG', {
-        HOST: 'lulpreserv3',
-        PORT: 7000,
-        DEBUG: true
+        readerProbeInterval: 30000,
+        debug: true
+    })
+    .constant('WORKPLACE', {
+        host: 'lulpreserv3',
+        port: 7000
     });

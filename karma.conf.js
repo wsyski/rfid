@@ -19,7 +19,6 @@ module.exports = function(config) {
       './node_modules/rx-dom/dist/rx.dom.js',
       './node_modules/rx-store/dist/rx-store.browser.js',
       './node_modules/phantomjs-polyfill-object-assign/object-assign-polyfill.js',
-      './src/app/rfid/rfid-store.js',
       './src/app/rfid/rfid-client.js',
       './src/app/**/rfid-*.spec.js'
     ],

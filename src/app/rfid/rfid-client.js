@@ -1,14 +1,23 @@
 (function (exports) {
     'use strict';
 
-    var AxRfidTagStore;
+    var DEFAULT_CONFIG = {
+        readerProbeInterval: 30000,
+        isDebug: false,
+        debugLogger: console.debug.bind(console),
+        errorLogger: console.error.bind(console)
+    };
+
+    var INITIAL_STATE = {isConnected: false, isReady: false, isEnabled: false, tags: []};
+
+    var createRxStore;
     if (typeof require === "undefined") {
-        AxRfidTagStore = AxRfid.TagStore;
+        createRxStore = RxStore.createRxStore;
     }
     else {
         require('rx-lite');
         require('rx-dom');
-        AxRfidTagStore = require('./rfid-store').TagStore;
+        createRxStore = require('rx-store').createRxStore;
     }
 
     function RfidError(message, cmd) {
@@ -23,19 +32,155 @@
     RfidError.prototype = Object.create(Error.prototype);
     RfidError.prototype.constructor = RfidError;
 
-    var CONFIG = {
-        host: "localhost",
-        port: 7000,
-        readerProbeInterval: 10000,
-        isDebug: false,
-        debugLogger: console.debug.bind(console),
-        errorLogger: console.error.bind(console)
+    function Tag(id, reader, isComplete) {
+        this.id = id;
+        this.reader = reader;
+        this.isComplete = isComplete;
+    }
+
+    Tag.prototype.setCheckoutState = function (isCheckoutState) {
+        this.isCheckoutState = isCheckoutState;
     };
 
+    function tagStoreReducer(state, action) {
+
+        function removeTag(tags, id) {
+            return tags.filter(function (tag) {
+                return tag.id !== id;
+            })
+        }
+
+        var payload = action.payload;
+
+        switch (action.type) {
+            case 'SET_CONNECTED':
+                if (payload.isConnected !== state.isConnected) {
+                    return Object.assign({}, INITIAL_STATE, {isConnected: payload.isConnected, isReady: payload.isConnected, isEnabled: payload.isConnected});
+                }
+                else {
+                    return state;
+                }
+            case 'SET_ENABLED':
+                if (payload.isEnabled !== state.isEnabled) {
+                    return Object.assign({}, state, {isEnabled: payload.isEnabled});
+                }
+                else {
+                    return state;
+                }
+            case 'SET_READY':
+                if (payload.isReady !== state.isReady) {
+                    return Object.assign({}, state, {isReady: payload.isReady});
+                }
+                else {
+                    return state;
+                }
+            case 'ADD_OR_REPLACE_TAG':
+                return Object.assign({}, state, {tags: removeTag(state.tags, payload.id).concat(new Tag(payload.id, payload.reader, payload.isComplete))});
+            case 'REMOVE_TAG':
+                return Object.assign({}, state, {tags: removeTag(state.tags, payload.id)});
+            case 'SET_CHECKOUT_STATE':
+                return Object.assign({}, state, {
+                    tags: state.tags.map(function (tag) {
+                        var newTag = new Tag(tag.id, tag.reader, tag.isComplete);
+                        if (tag.id === payload.id) {
+                            newTag.setCheckoutState(payload.isCheckoutState);
+                        }
+                        else {
+                            newTag.setCheckoutState(tag.isCheckoutState);
+                        }
+                        return newTag;
+                    })
+                });
+            default:
+                return state;
+        }
+    }
+
+    function TagStore() {
+
+        function addOrReplaceTag(id, reader, isComplete) {
+            return {
+                type: 'ADD_OR_REPLACE_TAG',
+                payload: {id: id, reader: reader, isComplete: isComplete}
+            };
+        }
+
+        function removeTag(id) {
+            return {
+                type: 'REMOVE_TAG',
+                payload: {id: id}
+            };
+        }
+
+        function setEnabled(isEnabled) {
+            return {
+                type: 'SET_ENABLED',
+                payload: {isEnabled: isEnabled}
+            };
+        }
+
+        function setReady(isReady) {
+            return {
+                type: 'SET_READY',
+                payload: {isReady: isReady}
+            };
+        }
+
+        function setCheckoutState(id, isCheckoutState) {
+            return {
+                type: 'SET_CHECKOUT_STATE',
+                payload: {id: id, isCheckoutState: isCheckoutState}
+            };
+        }
+
+        function setConnected(isConnected) {
+            return {
+                type: 'SET_CONNECTED',
+                payload: {isConnected: isConnected}
+            };
+        }
+
+        var store = createRxStore(tagStoreReducer, INITIAL_STATE);
+
+        return {
+            addOrReplaceTag: function (id, reader, isComplete) {
+                var action = addOrReplaceTag(id, reader, isComplete);
+                store.dispatch(action);
+            },
+            removeTag: function (id) {
+                var action = removeTag(id);
+                store.dispatch(action);
+            },
+            removeAllTags: function () {
+                var action = removeAllTags();
+                store.dispatch(action);
+            },
+            setEnabled: function (isEnabled) {
+                var action = setEnabled(isEnabled);
+                store.dispatch(action);
+            },
+            setReady: function (isReady) {
+                var action = setReady(isReady);
+                store.dispatch(action);
+            },
+            setCheckoutState: function (id, isCheckoutState) {
+                var action = setCheckoutState(id, isCheckoutState);
+                store.dispatch(action);
+            },
+            setConnected: function (isConnected) {
+                var action = setConnected(isConnected);
+                store.dispatch(action);
+            },
+            subscribe: function (callback) {
+                return store.subscribe(callback);
+            }
+        }
+    }
+
     function Client(overrideConfig) {
-        var config = Object.assign({}, CONFIG, overrideConfig);
+        var config = Object.assign({}, DEFAULT_CONFIG, overrideConfig);
         var debugSubject = new Rx.Subject();
-        var tagStore = new AxRfidTagStore();
+        var tagStore = new TagStore();
         var queue = [];
         var ws;
         var wsSubscription;
@@ -158,7 +303,7 @@
             return sendMessage({"cmd": "setCheckoutState", "id": id, "security": security})
         }
 
-        function connect(name) {
+        function connect(name, host, port) {
             var result = new Rx.ReplaySubject(0);
             if (ws) {
                 result.onError(new RfidError("Already connected"));
@@ -183,7 +328,7 @@
                     }
                 }.bind(this));
 
-                ws = Rx.DOM.fromWebSocket("ws://" + config.host + ":" + config.port, null, openObserver, closingObserver);
+                ws = Rx.DOM.fromWebSocket("ws://" + host + ":" + port, null, openObserver, closingObserver);
                 wsSubscription = ws.subscribe(
                     function (e) {
                         var messageAsString = e.data;
@@ -251,8 +396,8 @@
             setErrorHandler: function (errorHandler) {
                 setErrorHandler(errorHandler);
             },
-            connect: function (name) {
-                return connect(name);
+            connect: function (name, host, port) {
+                return connect(name, host, port);
             },
             disconnect: function () {
                 disconnect()
@@ -279,9 +424,21 @@
     }
 
     exports.Client = Client;
+    exports.Tag = Tag;
+    exports.TagStore = TagStore;
+    exports.RfidError = RfidError;
+    exports.INITIAL_STATE = INITIAL_STATE;
+    exports.DEFAULT_CONFIG = DEFAULT_CONFIG;
 
 }(window.AxRfid = window.AxRfid || {}));
 
 if (typeof module !== "undefined") {
-    module.exports = AxRfid.Client;
+    module.exports = {
+        Client: AxRfid.Client,
+        Tag: AxRfid.Tag,
+        TagStore: AxRfid.TagStore,
+        RfidError: AxRfid.RfidError,
+        INITIAL_STATE: AxRfid.INITIAL_STATE,
+        DEFAULT_CONFIG: AxRfid.DEFAULT_CONFIG
+    }
 }

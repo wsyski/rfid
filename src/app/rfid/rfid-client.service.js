@@ -1,18 +1,10 @@
 'use strict';
 
-var AxRfidClient = require('./rfid-client');
 var angular = require('angular');
 
-angular.module('rfid').factory('rfidClientService', ['RFID_CONFIG','$log', function (RFID_CONFIG, $log) {
-    var axRfidClient = new AxRfidClient({
-        host: RFID_CONFIG.HOST,
-        port: RFID_CONFIG.PORT,
-        isDebug: RFID_CONFIG.DEBUG,
-        debugLogger: $log.debug.bind($log),
-        errorLogger: $log.error.bind($log)
-    });
-    if (RFID_CONFIG.DEBUG) {
-        var debugSubscription = axRfidClient.getDebugSubject().subscribe(
+angular.module('rfid').factory('rfidClientService', ['rfidClient', '$log', 'RFID_CONFIG', function (rfidClient, $log, RFID_CONFIG) {
+    if (RFID_CONFIG.debug) {
+        var debugSubscription = rfidClient.getDebugSubject().subscribe(
             function (message) {
                 $log.debug('message: ' + JSON.stringify(message))
             },
@@ -22,23 +14,23 @@ angular.module('rfid').factory('rfidClientService', ['RFID_CONFIG','$log', funct
             angular.noop
         );
     }
-    var tagStore = axRfidClient.getTagStore();
+    var tagStore = rfidClient.getTagStore();
     return {
         setErrorHandler: function (errorHandler) {
-            axRfidClient.setErrorHandler(errorHandler);
+            rfidClient.setErrorHandler(errorHandler);
         },
         reload: function () {
-            axRfidClient.reload();
+            rfidClient.reload();
         },
         setCheckoutState: function (id, isCheckoutState) {
-            return axRfidClient.setCheckoutState(id, isCheckoutState);
+            return rfidClient.setCheckoutState(id, isCheckoutState);
         },
 
-        connect: function (name) {
-            return axRfidClient.connect(name);
+        connect: function (name, host, port) {
+            return rfidClient.connect(name, host, port);
         },
         disconnect: function () {
-            axRfidClient.disconnect();
+            rfidClient.disconnect();
         },
         subscribe: function (subscription) {
             return tagStore.subscribe(subscription);

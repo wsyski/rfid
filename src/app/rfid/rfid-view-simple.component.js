@@ -5,7 +5,7 @@ var angular = require('angular');
 angular.module('rfid').component('rfidViewSimple', {
     bindings: {
     },
-    controller: function (rfidClientService, $scope, $window, $log, utilService) {
+    controller: function (rfidClientService, $scope, $log, workplace, utilService) {
 
         function errorHandler(e) {
             var message;
@@ -28,7 +28,7 @@ angular.module('rfid').component('rfidViewSimple', {
         self.$onInit = function () {
             $log.debug('Subscribe');
             rfidClientService.setErrorHandler(errorHandler);
-            var result=rfidClientService.connect($window.navigator.userAgent);
+            var result=rfidClientService.connect(workplace.name,workplace.host,workplace.port);
             var connectSubscription=result.subscribe(
                 angular.noop,
                 function(e){
@@ -40,10 +40,12 @@ angular.module('rfid').component('rfidViewSimple', {
                 },
             );
             self.tagStoreSubscription = rfidClientService.subscribe(function (data) {
-                $log.debug('tagStore: '+JSON.stringify(data));
-                $scope.$evalAsync(function () {
-                    self.tagStore = data;
-                });
+                if (self.tagStore !== data) {
+                    $log.debug('tagStore: ' + JSON.stringify(data));
+                    $scope.$evalAsync(function () {
+                        self.tagStore = data;
+                    });
+                }
             });
          };
         self.$onDestroy = function() {

@@ -2,7 +2,7 @@
 
 var angular = require('angular');
 
-angular.module('rfid').directive('rfidEvents', ['$log', '$window', 'rfidClientService', 'utilService', function ($log, $window, rfidClientService, utilService) {
+angular.module('rfid').directive('rfidEvents', ['$log','workplace', 'rfidClientService', 'utilService', function ($log,workplace, rfidClientService, utilService) {
     return {
         restrict: 'A',
         require: '^rfidViewForm',
@@ -28,7 +28,7 @@ angular.module('rfid').directive('rfidEvents', ['$log', '$window', 'rfidClientSe
             self.tagStore = {};
             $log.debug('Subscribe');
             rfidClientService.setErrorHandler(errorHandler);
-            var result = rfidClientService.connect($window.navigator.userAgent);
+            var result = rfidClientService.connect(workplace.name, workplace.host, workplace.port);
             var connectSubscription = result.subscribe(
                 angular.noop,
                 function (e) {
@@ -40,13 +40,18 @@ angular.module('rfid').directive('rfidEvents', ['$log', '$window', 'rfidClientSe
                 },
             );
             self.tagStoreSubscription = rfidClientService.subscribe(function (data) {
-                $log.debug('tagStore: ' + JSON.stringify(data));
-                scope.$evalAsync(function () {
-                    self.tagStore = data;
-                    ctrl.tags = self.tagStore.tags;
-                });
+                if (self.tagStore !== data) {
+                    if (self.tagStore !== data) {
+                        $log.debug('tagStore: ' + JSON.stringify(data));
+                        scope.$evalAsync(function () {
+                            self.tagStore = data;
+                            ctrl.tags = self.tagStore.tags;
+
+                        });
+                    }
+                }
             });
-            scope.$on('$destroy', function() {
+            scope.$on('$destroy', function () {
                 if (self.tagStore.isConnected) {
                     rfidClientService.disconnect();
                 }
