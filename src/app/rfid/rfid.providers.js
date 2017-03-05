@@ -1,7 +1,8 @@
-'use strict';
-
 var AxRfidClient = require('./rfid-client').Client;
 var angular = require('angular');
+
+(function (angular,AxRfidClient) {
+    'use strict';
 
 angular.module('rfid')
     .provider('rfidClient', ['RFID_CONFIG', function (RFID_CONFIG) {
@@ -30,3 +31,4 @@ angular.module('rfid')
             }
         }
     }]);
+})(angular,AxRfidClient);

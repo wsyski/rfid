@@ -1,9 +1,10 @@
-'use strict';
-
 var angular = require('angular'),
     util = require('../util/util.module');
+(function (angular) {
+    'use strict';
 
-module.exports = angular.module('rfid', ['util']);
+    module.exports = angular.module('rfid', ['util']);
+})(angular);
 
 require('./rfid.constants');
 require('./rfid.providers');
