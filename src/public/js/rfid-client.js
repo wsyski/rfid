@@ -4,20 +4,20 @@
     var DEFAULT_CONFIG = {
         readerProbeInterval: 30000,
         isDebug: false,
-        debugLogger: console.debug.bind(console),
-        errorLogger: console.error.bind(console)
+        debugLogger: console.debug.bind(console), // eslint-disable-line no-console
+        errorLogger: console.error.bind(console) // eslint-disable-line no-console
     };
 
     var INITIAL_STATE = {isConnected: false, isReady: false, isEnabled: false, tags: []};
 
     var createRxStore;
-    if (typeof require === "undefined") {
-        createRxStore = RxStore.createRxStore;
+    if (typeof require === "undefined") { // eslint-disable-line no-undef
+        createRxStore = RxStore.createRxStore; // eslint-disable-line no-undef
     }
     else {
-        require('rx-lite');
-        require('rx-dom');
-        createRxStore = require('rx-store').createRxStore;
+        require('rx-lite'); // eslint-disable-line no-undef
+        require('rx-dom'); // eslint-disable-line no-undef
+        createRxStore = require('rx-store').createRxStore;  // eslint-disable-line no-undef
     }
 
     function RfidError(message, cmd) {
@@ -47,7 +47,7 @@
         function removeTag(tags, id) {
             return tags.filter(function (tag) {
                 return tag.id !== id;
-            })
+            });
         }
 
         var payload = action.payload;
@@ -60,6 +60,7 @@
                 else {
                     return state;
                 }
+                break;
             case 'SET_ENABLED':
                 if (payload.isEnabled !== state.isEnabled) {
                     return Object.assign({}, state, {isEnabled: payload.isEnabled});
@@ -67,6 +68,7 @@
                 else {
                     return state;
                 }
+                break;
             case 'SET_READY':
                 if (payload.isReady !== state.isReady) {
                     return Object.assign({}, state, {isReady: payload.isReady});
@@ -74,10 +76,13 @@
                 else {
                     return state;
                 }
+                break;
             case 'ADD_OR_REPLACE_TAG':
                 return Object.assign({}, state, {tags: removeTag(state.tags, payload.id).concat(new Tag(payload.id, payload.reader, payload.isComplete))});
             case 'REMOVE_TAG':
                 return Object.assign({}, state, {tags: removeTag(state.tags, payload.id)});
+            case 'REMOVE_ALL_TAGS':
+                return Object.assign({}, state, {tags: []});
             case 'SET_CHECKOUT_STATE':
                 return Object.assign({}, state, {
                     tags: state.tags.map(function (tag) {
@@ -109,6 +114,13 @@
             return {
                 type: 'REMOVE_TAG',
                 payload: {id: id}
+            };
+        }
+
+        function removeAllTags() {
+            return {
+                type: 'REMOVE_ALL_TAGS',
+                payload: {}
             };
         }
 
@@ -174,12 +186,12 @@
             subscribe: function (callback) {
                 return store.subscribe(callback);
             }
-        }
+        };
     }
 
     function Client(overrideConfig) {
         var config = Object.assign({}, DEFAULT_CONFIG, overrideConfig);
-        var debugSubject = new Rx.Subject();
+        var debugSubject = new Rx.Subject(); // eslint-disable-line no-undef
         var tagStore = new TagStore();
         var queue = [];
         var ws;
@@ -222,7 +234,7 @@
                 }
             }
             else {
-                result.onError(new RfidError("Unexpected message: " + messageAsString, message.cmd));
+                result.onError(new RfidError("Unexpected message: " + JSON.stringify(message), message.cmd));
             }
         }
 
@@ -234,7 +246,7 @@
         }
 
         function sendMessage(message) {
-            var result = new Rx.ReplaySubject(1);
+            var result = new Rx.ReplaySubject(1); // eslint-disable-line no-undef
             if (ws) {
                 var messageAsString = JSON.stringify(message);
                 debugMessage("request", message);
@@ -286,9 +298,9 @@
         }
 
         function probeReaderStatus() {
-            var readerProbe = Rx.Observable.interval(config.readerProbeInterval);
+            var readerProbe = Rx.Observable.interval(config.readerProbeInterval); // eslint-disable-line no-undef
             return readerProbe.subscribe(
-                function (result) {
+                function () {
                     readerStatus();
                 }
             );
@@ -300,17 +312,17 @@
 
         function setCheckoutState(id, isCheckoutState) {
             var security = isCheckoutState ? "Deactivated" : "Activated";
-            return sendMessage({"cmd": "setCheckoutState", "id": id, "security": security})
+            return sendMessage({"cmd": "setCheckoutState", "id": id, "security": security});
         }
 
         function connect(name, host, port) {
-            var result = new Rx.ReplaySubject(0);
+            var result = new Rx.ReplaySubject(0); // eslint-disable-line no-undef
             if (ws) {
                 result.onError(new RfidError("Already connected"));
             }
             else {
                 var readerProbeSubscription;
-                var openObserver = Rx.Observer.create(function (e) {
+                var openObserver = Rx.Observer.create(function () {  // eslint-disable-line no-undef
                     config.debugLogger('Connected');
                     tagStore.setConnected(true);
                     setClientName(name);
@@ -318,7 +330,7 @@
                     result.onCompleted();
                 }.bind(this));
 
-                var closingObserver = Rx.Observer.create(function () {
+                var closingObserver = Rx.Observer.create(function () { // eslint-disable-line no-undef
                     config.debugLogger('Disconnected');
                     tagStore.setConnected(false);
                     ws = null;
@@ -328,7 +340,7 @@
                     }
                 }.bind(this));
 
-                ws = Rx.DOM.fromWebSocket("ws://" + host + ":" + port, null, openObserver, closingObserver);
+                ws = Rx.DOM.fromWebSocket("ws://" + host + ":" + port, null, openObserver, closingObserver); // eslint-disable-line no-undef
                 wsSubscription = ws.subscribe(
                     function (e) {
                         var messageAsString = e.data;
@@ -350,8 +362,15 @@
                                     case 'Firsttime new partial':
                                         tagStore.addOrReplaceTag(id, reader, false);
                                         break;
-                                    default:
+                                    case 'Tag found':
+                                        break;
+                                    case 'Complete':
+                                    case 'Firsttime complete':
+                                    case 'Firsttime new complete':
                                         tagStore.addOrReplaceTag(id, reader, true);
+                                        break;
+                                    default:
+                                        config.errorLogger('Unknown tag command reason: ' + reason);
                                 }
                                 break;
                             case "disabled":
@@ -400,10 +419,10 @@
                 return connect(name, host, port);
             },
             disconnect: function () {
-                disconnect()
+                disconnect();
             },
             reload: function () {
-                reload()
+                reload();
             },
             setCheckoutState: function (id, isCheckoutState) {
                 return setCheckoutState(id, isCheckoutState);
@@ -420,7 +439,7 @@
             sendMessage: function (message) {
                 return sendMessage(message);
             }
-        }
+        };
     }
 
     exports.Client = Client;
@@ -433,12 +452,12 @@
 }(window.AxRfid = window.AxRfid || {}));
 
 if (typeof module !== "undefined") {
-    module.exports = {
-        Client: AxRfid.Client,
-        Tag: AxRfid.Tag,
-        TagStore: AxRfid.TagStore,
-        RfidError: AxRfid.RfidError,
-        INITIAL_STATE: AxRfid.INITIAL_STATE,
-        DEFAULT_CONFIG: AxRfid.DEFAULT_CONFIG
-    }
+    module.exports = { // eslint-disable-line no-undef
+        Client: AxRfid.Client, // eslint-disable-line no-undef
+        Tag: AxRfid.Tag, // eslint-disable-line no-undef
+        TagStore: AxRfid.TagStore, // eslint-disable-line no-undef
+        RfidError: AxRfid.RfidError, // eslint-disable-line no-undef
+        INITIAL_STATE: AxRfid.INITIAL_STATE, // eslint-disable-line no-undef
+        DEFAULT_CONFIG: AxRfid.DEFAULT_CONFIG // eslint-disable-line no-undef
+    };
 }

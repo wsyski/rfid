@@ -5,13 +5,13 @@ var angular = require('angular');
 
     angular.module('rfid').factory('rfidClientService', ['rfidClient', '$log', 'RFID_CONFIG', function (rfidClient, $log, RFID_CONFIG) {
         function isRfidEnabled(workplace) {
-            return workplace.host && workplace.port;
+            return workplace && workplace.hostname && workplace.port;
         }
 
         if (RFID_CONFIG.debug) {
             var debugSubscription = rfidClient.getDebugSubject().subscribe(
                 function (message) {
-                    $log.debug('message: ' + JSON.stringify(message))
+                    $log.debug('message: ' + JSON.stringify(message));
                 },
                 function (e) {
                     $log.debug('error: ' + e);
@@ -21,7 +21,7 @@ var angular = require('angular');
         }
         var tagStore = rfidClient.getTagStore();
         return {
-            isRfidEnabled(workplace) {
+            isRfidEnabled: function(workplace) {
                 return isRfidEnabled(workplace);
             },
             setErrorHandler: function (errorHandler) {
@@ -43,6 +43,6 @@ var angular = require('angular');
             subscribe: function (subscription) {
                 return tagStore.subscribe(subscription);
             }
-        }
+        };
     }]);
 })(angular);

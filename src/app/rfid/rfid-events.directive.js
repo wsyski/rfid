@@ -1,3 +1,5 @@
+var AxRfidInitialState = require('./rfid-client').INITIAL_STATE;
+
 var angular = require('angular');
 (function (angular) {
     'use strict';
@@ -24,12 +26,23 @@ var angular = require('angular');
                     utilService.showToast(message);
                 }
 
-                var self = this;
-                self.tagStore = {};
+                function getNewTags(tags, existingTags) {
+                    return tags.filter(
+                        function (tag) {
+                            return typeof existingTags.find(
+                                    function (existingTag) {
+                                        return existingTag.id === tag.id;
+                                    }
+                                ) === "undefined";
+                        }
+                    );
+                }
+
+                var tagStore = AxRfidInitialState;
                 if (rfidClientService.isRfidEnabled(workplace)) {
                     $log.debug('Subscribe');
                     rfidClientService.setErrorHandler(errorHandler);
-                    var result = rfidClientService.connect(workplace.name, workplace.host, workplace.port);
+                    var result = rfidClientService.connect(workplace.name, workplace.hostname, workplace.port);
                     var connectSubscription = result.subscribe(
                         angular.noop,
                         function (e) {
@@ -38,26 +51,33 @@ var angular = require('angular');
                         function () {
                             connectSubscription.dispose();
                             rfidClientService.reload();
-                        },
+                        }
                     );
-                    self.tagStoreSubscription = rfidClientService.subscribe(function (data) {
-                        if (self.tagStore !== data) {
-                            if (self.tagStore !== data) {
-                                $log.debug('tagStore: ' + JSON.stringify(data));
+                    var tagStoreSubscription = rfidClientService.subscribe(function (data) {
+                        if (tagStore !== data) {
+                            if (tagStore !== data) {
+                                $log.log('tagStore: ' + JSON.stringify(data));
+                                var addTags = getNewTags(data.tags, tagStore.tags);
+                                var removeTags = getNewTags(tagStore.tags, data.tags);
                                 scope.$evalAsync(function () {
-                                    self.tagStore = data;
-                                    ctrl.tags = self.tagStore.tags;
+                                    addTags.forEach(function(tag) {
+                                        ctrl.addTag(tag);
+                                    });
+                                    removeTags.forEach(function(tag) {
+                                        ctrl.removeTag(tag.id);
+                                    });
 
                                 });
+                                tagStore=data;
                             }
                         }
                     });
                     scope.$on('$destroy', function () {
-                        if (self.tagStore.isConnected) {
+                        if (tagStore.isConnected) {
                             rfidClientService.disconnect();
                         }
                         $log.debug('Unsubscribe');
-                        self.tagStoreSubscription.unsubscribe();
+                        tagStoreSubscription.unsubscribe();
                     });
                 }
             }

@@ -28,7 +28,7 @@ angular.module('rfid').component('rfidViewSimple', {
         self.$onInit = function () {
             $log.debug('Subscribe');
             rfidClientService.setErrorHandler(errorHandler);
-            var result=rfidClientService.connect(workplace.name,workplace.host,workplace.port);
+            var result=rfidClientService.connect(workplace.name,workplace.hostname,workplace.port);
             var connectSubscription=result.subscribe(
                 angular.noop,
                 function(e){

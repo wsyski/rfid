@@ -58,7 +58,7 @@ angular.module('rfid').component('rfidViewComplex', {
             self.tagStoreSubscription.unsubscribe();
         };
         self.connect = function() {
-            var result=rfidClientService.connect(workplace.name,workplace.host,workplace.port);
+            var result=rfidClientService.connect(workplace.name,workplace.hostname,workplace.port);
             var connectSubscription=result.subscribe(
                 angular.noop,
                 function(e){

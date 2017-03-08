@@ -25,7 +25,7 @@ angular.module('rfid')
             $get: function () {
                 return {
                     name: $window.navigator.userAgent,
-                    host: WORKPLACE.host,
+                    hostname: WORKPLACE.host,
                     port: WORKPLACE.port
                 }
             }
