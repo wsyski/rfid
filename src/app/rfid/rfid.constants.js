@@ -11,7 +11,7 @@ var angular = require('angular');
         })
         .constant('WORKPLACE', {
             //host: 'lulpreserv3',
-            host: 'rfid.quria.axiell.com',
+            host: 'rfid.axiell.local',
             port: 8443
         });
 })(angular);
