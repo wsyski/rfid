@@ -331,7 +331,7 @@
       return sendMessage({"cmd": "setCheckoutState", "id": id, "security": security});
     }
 
-    function connect(name, protocol, host, port) {
+    function connect(name, protocol, host, port, path) {
       var result = new Rx.ReplaySubject(0); // eslint-disable-line no-undef
       if (ws) {
         result.onError(new RfidError("Already connected"));
@@ -361,7 +361,7 @@
           }
         }.bind(this));
 
-        ws = Rx.DOM.fromWebSocket(protocol + "://" + host + ":" + port, null, openObserver, closingObserver); // eslint-disable-line no-undef
+        ws = Rx.DOM.fromWebSocket(protocol + "://" + host + ":" + port + path, null, openObserver, closingObserver); // eslint-disable-line no-undef
         wsSubscription = ws.subscribe(
           function (e) {
             var messageAsString = e.data;

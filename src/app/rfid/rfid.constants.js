@@ -6,6 +6,7 @@ var angular = require('angular');
     angular.module('rfid')
         .constant('RFID_CONFIG', {
             protocol: 'wss',
+            path: '/websocket',
             readerProbeInterval: 30000,
             debug: true
         })

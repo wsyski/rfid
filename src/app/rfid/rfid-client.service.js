@@ -35,7 +35,7 @@ var angular = require('angular');
             },
 
             connect: function (name, host, port) {
-                return rfidClient.connect(name, RFID_CONFIG.protocol, host, port);
+                return rfidClient.connect(name, RFID_CONFIG.protocol, host, port, RFID_CONFIG.path);
             },
             disconnect: function () {
                 rfidClient.disconnect();

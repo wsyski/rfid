@@ -7,6 +7,7 @@ describe('RFID Client', function () {
   var PROTOCOL = "ws";
   var HOST = "localhost";
   var PORT = 7000;
+  var PATH = "";
 
   describe('AxRfid.TagStore', function () {
 
@@ -148,7 +149,7 @@ describe('RFID Client', function () {
       var subscription = axRfidTagStore.subscribe(function (data) {
         states.push(data);
       });
-      axRfidClient.connect(WORKPLACE_NAME, PROTOCOL, HOST, PORT);
+      axRfidClient.connect(WORKPLACE_NAME, PROTOCOL, HOST, PORT, PATH);
       openObserverOnNext();
       if (callback) {
         callback();
