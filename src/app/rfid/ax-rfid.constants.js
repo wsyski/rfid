@@ -6,13 +6,13 @@ var angular = require('angular');
     angular.module('rfid')
         .constant('RFID_CONFIG', {
             protocol: 'wss',
-            path: '/websocket',
+            path: '',
             readerProbeInterval: 30000,
             debug: true
         })
         .constant('WORKPLACE', {
             //host: 'lulpreserv3',
-            host: 'rfid.axiell.local',
-            port: 8443
+            host: 'lulpreserv3-wsproxy.axiell.local',
+            port: 9443
         });
 })(angular);

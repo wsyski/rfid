@@ -331,6 +331,10 @@
       return sendMessage({"cmd": "setCheckoutState", "id": id, "security": security});
     }
 
+    function setTags(id) {
+      return sendMessage({"cmd": "program", "fields": {"id": id}});
+    }
+
     function connect(name, protocol, host, port, path) {
       var result = new Rx.ReplaySubject(0); // eslint-disable-line no-undef
       if (ws) {
@@ -449,6 +453,9 @@
 
       // Set the checkout state
       setCheckoutState: setCheckoutState,
+
+      // Program the tags
+      setTags: setTags,
 
       // Gets the TagStore singleton.
       getTagStore: function () {

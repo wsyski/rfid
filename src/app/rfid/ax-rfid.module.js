@@ -6,9 +6,9 @@ var angular = require('angular'),
     module.exports = angular.module('rfid', ['util']);
 })(angular);
 
-require('./rfid.constants');
-require('./rfid.providers');
-require('./rfid-client.service');
+require('./ax-rfid.constants');
+require('./ax-rfid.providers');
+require('./ax-rfid.service');
 require('./rfid-events.directive');
 require('./tag-detail.component');
 require('./tag-store.component');

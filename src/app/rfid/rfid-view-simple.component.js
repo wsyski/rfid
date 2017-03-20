@@ -5,7 +5,7 @@ var angular = require('angular');
 angular.module('rfid').component('rfidViewSimple', {
     bindings: {
     },
-    controller: function (rfidClientService, $scope, $log, workplace, utilService) {
+    controller: function (axRfidClientService, $scope, $log, workplace, utilService) {
 
         function errorHandler(e) {
             var message;
@@ -27,19 +27,9 @@ angular.module('rfid').component('rfidViewSimple', {
         self.tagStore = {};
         self.$onInit = function () {
             $log.debug('Subscribe');
-            rfidClientService.setErrorHandler(errorHandler);
-            var result=rfidClientService.connect(workplace.name,workplace.hostname,workplace.port);
-            var connectSubscription=result.subscribe(
-                angular.noop,
-                function(e){
-                   errorHandler(e);
-                },
-                function(){
-                    connectSubscription.dispose();
-                    rfidClientService.reload();
-                },
-            );
-            self.tagStoreSubscription = rfidClientService.subscribe(function (data) {
+            axRfidClientService.setErrorHandler(errorHandler);
+            axRfidClientService.connectAndReload(workplace.name,workplace.hostname,workplace.port);
+            self.tagStoreSubscription = axRfidClientService.subscribe(function (data) {
                 if (self.tagStore !== data) {
                     $log.debug('tagStore: ' + JSON.stringify(data));
                     $scope.$evalAsync(function () {
@@ -50,7 +40,7 @@ angular.module('rfid').component('rfidViewSimple', {
          };
         self.$onDestroy = function() {
             if (self.tagStore.isConnected) {
-                rfidClientService.disconnect();
+                axRfidClientService.disconnect();
             }
             $log.debug('Unsubscribe');
             self.tagStoreSubscription.unsubscribe();

@@ -5,10 +5,10 @@ var angular = require('angular');
 angular.module('rfid').component('rfidViewComplex', {
     bindings: {
     },
-    controller: function (rfidClientService, $scope, $log, workplace, utilService) {
+    controller: function (axRfidClientService, $scope, $log, workplace, utilService) {
 
         function setCheckoutState(id,isCheckoutState) {
-            var result = rfidClientService.setCheckoutState(id, isCheckoutState);
+            var result = axRfidClientService.setCheckoutState(id, isCheckoutState);
             var cmdSubscription = result.subscribe(
                 angular.noop,
                 function (e) {
@@ -40,8 +40,8 @@ angular.module('rfid').component('rfidViewComplex', {
         self.tagStore = {};
         self.$onInit = function () {
             $log.debug('Subscribe');
-            rfidClientService.setErrorHandler(errorHandler);
-            self.tagStoreSubscription = rfidClientService.subscribe(function (data) {
+            axRfidClientService.setErrorHandler(errorHandler);
+            self.tagStoreSubscription = axRfidClientService.subscribe(function (data) {
                 if (self.tagStore !== data) {
                     $log.debug('tagStore: ' + JSON.stringify(data));
                     $scope.$evalAsync(function () {
@@ -52,25 +52,16 @@ angular.module('rfid').component('rfidViewComplex', {
         };
         self.$onDestroy = function() {
             if (self.tagStore.isConnected) {
-                rfidClientService.disconnect();
+                axRfidClientService.disconnect();
             }
             $log.debug('Unsubscribe');
             self.tagStoreSubscription.unsubscribe();
         };
         self.connect = function() {
-            var result=rfidClientService.connect(workplace.name,workplace.hostname,workplace.port);
-            var connectSubscription=result.subscribe(
-                angular.noop,
-                function(e){
-                    errorHandler(e);
-                },
-                function(){
-                    connectSubscription.dispose();
-                },
-            );
+            axRfidClientService.connectAndReload(workplace.name,workplace.hostname,workplace.port);
         };
-        self.disconnect = rfidClientService.disconnect;
-        self.reload = rfidClientService.reload;
+        self.disconnect = axRfidClientService.disconnect;
+        self.reload = axRfidClientService.reload;
         self.setCheckoutState = function (isCheckoutState) {
             var tags = self.tagStore.tags;
             tags.forEach(function (tag, index) {

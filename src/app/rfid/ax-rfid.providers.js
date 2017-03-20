@@ -1,5 +1,11 @@
-var AxRfidClient = require('./rfid-client').Client;
-var angular = require('angular');
+var AxRfidClient;
+if (typeof require !== "undefined") {
+  AxRfidClient = require('./rfid-client').Client;
+  var angular = require('angular');
+}
+else {
+  AxRfidClient=AxRfid.Client;
+}
 
 (function (angular,AxRfidClient) {
     'use strict';

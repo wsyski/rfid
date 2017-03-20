@@ -15,12 +15,19 @@ module.exports = function(config) {
 
     // list of files / patterns to load in the browser
     files: [
+      './node_modules/angular/angular.js',
+      './node_modules/angular-mocks/angular-mocks.js',
+      './node_modules/object-assign-shim/index.js',
       './node_modules/rx-lite/rx.lite.js',
       './node_modules/rx-dom/dist/rx.dom.js',
       './node_modules/rx-store/dist/rx-store.browser.js',
       './node_modules/phantomjs-polyfill-object-assign/object-assign-polyfill.js',
       './src/app/rfid/rfid-client.js',
-      './src/app/**/rfid-*.spec.js'
+//      './src/app/rfid/ax-rfid.module.js',
+//      './src/app/rfid/ax-rfid.constants.js',
+//      './src/app/rfid/ax-rfid.providers.js',
+//      './src/app/rfid/ax-rfid.service.js',
+      './src/app/**/*.spec.js'
     ],
 
 
