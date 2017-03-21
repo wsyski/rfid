@@ -101,6 +101,12 @@
             return newTag;
           })
         });
+      case 'SET_TAGS':
+        return Object.assign({}, state, {
+          tags: state.tags.map(function (tag) {
+            return new Tag(payload.id, tag.reader, true);
+          })
+        });
       default:
         return state;
     }
@@ -118,6 +124,13 @@
     function removeTag(id) {
       return {
         type: 'REMOVE_TAG',
+        payload: {id: id}
+      };
+    }
+
+    function setTags(id) {
+      return {
+        type: 'SET_TAGS',
         payload: {id: id}
       };
     }
@@ -186,6 +199,11 @@
       // to check if Rfid reader is up and running.
       setReady: function (isReady) {
         var action = setReady(isReady);
+        store.dispatch(action);
+      },
+      // Program all tags on the Rfid reader
+      setTags: function (id) {
+        var action = setTags(id);
         store.dispatch(action);
       },
       // Set the checkout state, The TagStore is in the checkout state if the tag alarm is disabled.
@@ -419,6 +437,10 @@
               case "resend":
               case "Resend":
                 tagStore.setEnabled(true);
+                handleMessage(message);
+                break;
+              case "program":
+                tagStore.setTags(message.id);
                 handleMessage(message);
                 break;
               case "setCheckoutState":

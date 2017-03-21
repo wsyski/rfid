@@ -73,13 +73,11 @@
         onError = errorHandler;
         rfidClient.setErrorHandler(errorHandler);
       },
-      setCheckoutState: function (id, isCheckoutState) {
-        return rfidClient.setCheckoutState(id, isCheckoutState);
-      },
+      setCheckoutState: rfidClient.setCheckoutState,
 
-      subscribe: function(onNext) {
-        return tagStore.subscribe(onNext);
-      },
+      setTags: rfidClient.setTags,
+
+      subscribe: tagStore.subscribe,
       connectAndReload: function (name, host, port) {
         var result = rfidClient.connect(name, RFID_CONFIG.protocol, host, port, RFID_CONFIG.path);
         var connectSubscription = result.subscribe(

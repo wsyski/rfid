@@ -6,7 +6,7 @@ var angular = require('angular');
 
   angular.module('rfid').directive('rfidEvents', ['$log', 'workplace', 'axRfidClientService', 'utilService', function ($log, workplace, axRfidClientService, utilService) {
     return {
-      restrict: 'A',
+      restrict: 'E',
       require: '^rfidViewForm',
       scope: {},
       link: function (scope, element, attrs, ctrl) {
@@ -32,6 +32,9 @@ var angular = require('angular');
           axRfidClientService.setErrorHandler(errorHandler);
           axRfidClientService.connectAndReload(workplace.name, workplace.hostname, workplace.port);
 
+          ctrl.onSubmit=function() {
+            axRfidClientService.setTags(ctrl.value);
+          }
           axRfidClientService.subscribeOnTagAddedOrRemoved(
             function (tag) {
               scope.$evalAsync(function () {
