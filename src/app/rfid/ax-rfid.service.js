@@ -79,7 +79,7 @@
 
       subscribe: tagStore.subscribe,
       connectAndReload: function (name, host, port) {
-        var result = rfidClient.connect(name, RFID_CONFIG.protocol, host, port, RFID_CONFIG.path);
+        var result = rfidClient.connect(name, RFID_CONFIG.protocol, host, port);
         var connectSubscription = result.subscribe(
           angular.noop,
           onError,

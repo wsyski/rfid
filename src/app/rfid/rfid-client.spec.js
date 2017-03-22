@@ -7,7 +7,6 @@ describe('RFID Client', function () {
   var PROTOCOL = "ws";
   var HOST = "localhost";
   var PORT = 7000;
-  var PATH = "";
 
   describe('AxRfid.TagStore', function () {
 
@@ -140,6 +139,10 @@ describe('RFID Client', function () {
       return JSON.stringify({"cmd": "setCheckoutState", "id": id, "security": isCheckoutState ? "Deactivated" : "Activated"});
     }
 
+    function cmdTagProgram(id) {
+      return JSON.stringify({"cmd": "program", "fields": {"id": id}, "tags": "1"});
+    }
+
     function cmdResendResponse() {
       return JSON.stringify({"cmd": "resend"});
     }
@@ -149,7 +152,7 @@ describe('RFID Client', function () {
       var subscription = axRfidTagStore.subscribe(function (data) {
         states.push(data);
       });
-      axRfidClient.connect(WORKPLACE_NAME, PROTOCOL, HOST, PORT, PATH);
+      axRfidClient.connect(WORKPLACE_NAME, PROTOCOL, HOST, PORT);
       openObserverOnNext();
       if (callback) {
         callback();
@@ -230,6 +233,28 @@ describe('RFID Client', function () {
       it("tag store state has one tag in checkout state", function () {
         var tag = new AxRfid.Tag(ID_0, READER, true);
         tag.setCheckoutState(true);
+        var expectedState = Object.assign({},
+          AxRfid.INITIAL_STATE,
+          {isConnected: true, isReady: true, isEnabled: true},
+          {tags: [tag]});
+        expect(state).toEqual(expectedState);
+      });
+    });
+
+    describe("cmd program", function () {
+      var state;
+
+      beforeEach(function () {
+        var cmdResponses = [cmdTagCompleteResponse(ID_0),cmdTagProgram(ID_1)];
+        var callback = function () {
+          var cmdSubscription = axRfidClient.setTags(ID_1);
+          cmdSubscription.dispose();
+        };
+        state = cmdTest(cmdResponses, callback);
+      });
+
+      it("tag store state has one tag programmed", function () {
+        var tag = new AxRfid.Tag(ID_1, READER, true);
         var expectedState = Object.assign({},
           AxRfid.INITIAL_STATE,
           {isConnected: true, isReady: true, isEnabled: true},
