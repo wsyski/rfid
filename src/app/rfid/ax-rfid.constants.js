@@ -11,7 +11,7 @@ var angular = require('angular');
         })
         .constant('WORKPLACE', {
             //host: 'lulpreserv3',
-            host: 'lulpreserv3-wsproxy.axiell.local',
+            host: 'rfid0-wsproxy.axiell.local',
             port: 443
         });
 })(angular);
