@@ -27,7 +27,6 @@ angular.module('rfid').component('rfidViewSimple', {
         self.tagStore = {};
         self.$onInit = function () {
             $log.debug('Subscribe');
-            axRfidClientService.setErrorHandler(errorHandler);
             axRfidClientService.connectAndReload(workplace.name,workplace.hostname,workplace.port);
             self.tagStoreSubscription = axRfidClientService.subscribe(function (data) {
                 if (self.tagStore !== data) {

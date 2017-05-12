@@ -69,10 +69,6 @@
     }
 
     return {
-      setErrorHandler: function (errorHandler) {
-        onError = errorHandler;
-        rfidClient.setErrorHandler(errorHandler);
-      },
       setCheckoutState: rfidClient.setCheckoutState,
 
       setTags: rfidClient.setTags,

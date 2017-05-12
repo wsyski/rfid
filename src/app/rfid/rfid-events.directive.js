@@ -29,7 +29,6 @@ var angular = require('angular');
         var tagStore = AxRfidInitialState;
         if (workplace && workplace.hostname && workplace.port) {
           $log.debug('Subscribe');
-          axRfidClientService.setErrorHandler(errorHandler);
           axRfidClientService.connectAndReload(workplace.name, workplace.hostname, workplace.port);
 
           ctrl.onSubmit=function() {
